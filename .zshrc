@@ -1,25 +1,11 @@
-export PATH="$HOME/.cabal/bin:$PATH"
-export PATH="$HOME/.cargo/bin:$PATH"
-export PATH="$HOME/.emacs.d/bin:$PATH"
-export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/bin:$PATH"
-export PATH="/usr/local/bin:$PATH"
-export PATH="$HOME/.rbenv/shims:$PATH"
+sourceIfExists () {
+    if [ -f "$1" ]; then
+        source "$1"
+    fi
+}
 
-export PATH=$HOME/.local/bin:$PATH
-export PATH="/usr/local/opt/libpq/bin:$PATH"
-export PATH="/usr/local/sbin:$PATH"
-export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig:${PKG_CONFIG_PATH}"
-
-export PATH="/usr/local/opt/libpq/bin:$PATH"
-export LDFLAGS="-L/usr/local/opt/libpq/lib"
-export CPPFLAGS="-I/usr/local/opt/libpq/include"
-export PKG_CONFIG_PATH="/usr/local/opt/libpq/lib/pkgconfig"
-
-export PG9DIR=$HOME/postgres9-everything-not-firehose/data
-export PG11DIR=$HOME/postgres9-firehose/data
-export PG11PORT=5433
-export PGUSER=postgres
+sourceIfExists ~/workstation/wssh/settings/paths.sh
+sourceIfExists ~/workstation/wssh/settings/build.sh
 
 eval "$(rbenv init -)"
 
