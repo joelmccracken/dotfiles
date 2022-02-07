@@ -7,7 +7,7 @@ sourceIfExists () {
 sourceIfExists ~/workstation/wssh/settings/paths.sh
 sourceIfExists ~/workstation/wssh/settings/build.sh
 
-eval "$(rbenv init -)"
+# eval "$(rbenv init -)"
 
 export EDITOR=emacsclient
 export GIT_EDITOR=$EDITOR
