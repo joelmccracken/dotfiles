@@ -6,6 +6,7 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
+(setq no-native-compile t)
 
 (setq user-full-name "Joel McCracken"
       user-mail-address "mccraken.joel@gmail.com")
