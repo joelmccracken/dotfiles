@@ -5,6 +5,11 @@
  ;; If there is more than one, they won't work right.
  '(safe-local-variable-values
    '((eval progn
+           (make-local-variable 'projectile-make-test-cmd)
+           (setq projectile-ruby-test-cmd "rake"))
+     (eval message "starting yaml-mode")
+     (eval message "hello there")
+     (eval progn
            (let*
                ((load-path
                  (cons

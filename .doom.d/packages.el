@@ -49,5 +49,8 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
+(when (equal (getenv "DOOM_DISABLE_NATIVE_COMPILE") "true")
+  (setq straight-disable-native-compile t))
+
 (package! vline)
 (package! xhair)
