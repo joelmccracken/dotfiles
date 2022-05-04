@@ -45,13 +45,6 @@ bwAuth () {
     export BW_SESSION=`bw unlock --passwordfile ~/secrets/bw_pass --raw`;
 }
 
-sourceIfExists () {
-    if [ -f "$1" ]; then
-        source "$1"
-    fi
-}
-
-sourceIfExists ~/.nix-profile/etc/profile.d/nix.sh
 sourceIfExists ~/etc/machine-settings.sh
 sourceIfExists ~/.zshrc.${WORKSTATION_NAME}.sh
-if [ -e /Users/joel/.nix-profile/etc/profile.d/nix.sh ]; then . /Users/joel/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
