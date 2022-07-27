@@ -231,8 +231,13 @@ bin/haskell-language-server-macOS-8.8.4
 .config/nixpkgs/
 .pyenv/
 .zsh_sessions/
+wshs/result
 
 
-# workstation directory
-# this should be managed independent of git
-/workstation/
+.config/pip/
+.cookiecutter_replay/
+.matplotlib/
+.pylint.d/
+.python_history
+.vim/
+workstation/

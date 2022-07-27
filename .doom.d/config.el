@@ -6,7 +6,7 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq no-native-compile t)
+;; (setq no-native-compile t)
 
 (setq user-full-name "Joel McCracken"
       user-mail-address "mccraken.joel@gmail.com")
@@ -40,26 +40,10 @@
       (concat "~/.doom.d/config." workstation-name ".el"))
 
 (after! org
-  (setq org-mobile-directory "~/Dropbox/Apps/MobileOrg")
-  (setq org-directory "~/Dropbox/EF")
-  (setq org-id-locations-file "~/Dropbox/EF/.orgids.el")
-  (setq org-roam-directory "~/Dropbox/EF")
-
-  (setq org-agenda-files '("~/Dropbox/EF"
-                           "~/Dropbox/EF/reference"
-                           "~/Dropbox/EF/projects"
-                           ))
-
   (setq org-agenda-custom-commands
       '(("p" "Projects" tags "+CATEGORY=\"PROJ\"+LEVEL=1")
         ("a" "Actions" tags "+TODO=\"TODO\"|+TODO=\"LOOP\"")
         ))
-
-  (setq +org-capture-notes-file "inbox.org")
-
-  (setq org-mobile-files (org-agenda-files))
-
-  (setq org-mobile-inbox-for-pull "~/Dropbox/EF/inbox-mobile.org")
 
   (add-hook 'org-mode-hook 'turn-on-auto-fill))
 

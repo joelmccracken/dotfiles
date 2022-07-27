@@ -53,4 +53,4 @@
   (setq straight-disable-native-compile t))
 
 (package! vline)
-(package! xhair)
+;; (package! xhair)
