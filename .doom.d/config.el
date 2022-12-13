@@ -42,8 +42,15 @@
 (after! org
   (setq org-agenda-custom-commands
       '(("p" "Projects" tags "+CATEGORY=\"PROJ\"+LEVEL=1")
-        ("a" "Actions" tags "+TODO=\"TODO\"|+TODO=\"LOOP\"")
-        ))
+        ("a" "Actions" tags "+TODO=\"TODO\"|+TODO=\"LOOP\"")))
+
+(setq +org-capture-notes-file "inbox.org")
+
+(setq org-mobile-files
+      '( "~/Dropbox/EF/actions.org"
+         "~/Dropbox/EF/projects.org"))
+
+  (setq org-mobile-inbox-for-pull "~/Dropbox/EF/inbox-mobile.org")
 
   (add-hook 'org-mode-hook 'turn-on-auto-fill))
 
@@ -57,6 +64,12 @@
 (setq global-flycheck-mode nil)
 
 (load-theme 'tsdh-light)
+
+
+(add-to-list 'load-path "~/Projects/shen-elisp/")
+(require 'shen-elisp)
+(require 'shen-repl)
+;; (setq org-src-preserve-indentation nil)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
