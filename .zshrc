@@ -4,10 +4,10 @@ sourceIfExists () {
     fi
 }
 
+
 sourceIfExists ~/workstation/wssh/settings/paths.sh
 sourceIfExists ~/workstation/wssh/settings/build.sh
-
-# eval "$(rbenv init -)"
+sourceIfExists ~/workstation/hosts/current/zshrc.sh
 
 export EDITOR=emacsclient
 export GIT_EDITOR=$EDITOR
@@ -48,3 +48,4 @@ bwAuth () {
 sourceIfExists ~/etc/machine-settings.sh
 sourceIfExists ~/.zshrc.${WORKSTATION_NAME}.sh
 sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh                                                                                                                  ~/workstation
