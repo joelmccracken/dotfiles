@@ -241,3 +241,6 @@ wshs/result
 .python_history
 .vim/
 workstation/
+
+# zsh autocompletion cache file, automatically created if missing
+.zcompdump
