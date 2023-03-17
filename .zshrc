@@ -40,12 +40,8 @@ alert_when_done() {
     do_command_done_alert
 }
 
-bwAuth () {
-    # authtenticates bitwarden for this shell session only
-    export BW_SESSION=`bw unlock --passwordfile ~/secrets/bw_pass --raw`;
-}
-
 sourceIfExists ~/etc/machine-settings.sh
 sourceIfExists ~/.zshrc.${WORKSTATION_NAME}.sh
 sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+sourceIfExists ~/workstation/lib/shell/funcs.sh
