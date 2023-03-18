@@ -1,6 +1,19 @@
 # files being managed elsewhere
 # (should all be symlinks to e.g. workstation repo)
 .gitconfig
+.config/git
+.bashrc
+.ghci
+.hammerspoon/
+.nix-channels
+.npmrc
+.reddup.yml
+.zshrc
+.zshrc.aeglos.sh
+Brewfile
+Brewfile.lock.json
+bitbar
+
 
 # history files
 .bash_history
@@ -121,7 +134,9 @@ secrets
 
 # os x stuff
 .CFUserTextEncoding
-.DS_Store
+# .DS_Store # already ignored in ~/config/git/ignore
+# so commenting out there so i can notice if sometehing is
+# wrong with my symlink configuration monster
 .Trash
 
 # log files, caches
