@@ -1,3 +1,7 @@
+# files being managed elsewhere
+# (should all be symlinks to e.g. workstation repo)
+.gitconfig
+
 # history files
 .bash_history
 .cljsc_history
