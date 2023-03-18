@@ -12,8 +12,6 @@ sourceIfExists ~/workstation/hosts/current/zshrc.sh
 export EDITOR=emacsclient
 export GIT_EDITOR=$EDITOR
 
-alias lock=/System/Library/Frameworks/ScreenSaver.framework/Versions/Current/Resources/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine
-
 export LANG=en_US.UTF-8
 
 # TODO figure out how to make this work in zsh
