@@ -227,10 +227,6 @@ sesco/
 # to revision them
 .nix-profile
 
-# this contains the files for doom; should consider this an opaque blob
-.emacs.d
-/.config/emacs
-
 # home dir tmp
 /tmp
 
@@ -245,10 +241,7 @@ tvision
 # local haskell language server, do not want to addd
 bin/haskell-language-server-macOS-8.8.4
 
-
 # ignore these for now
-.aws/
-.config/nixpkgs/
 .pyenv/
 .zsh_sessions/
 wshs/result
@@ -261,9 +254,17 @@ wshs/result
 .python_history
 .vim/
 workstation/
-.config/chezmoi/chezmoistate.boltdb
 
 # zsh autocompletion cache file, automatically created if missing
 .zcompdump
 
 /.doom.d
+
+# emacs is set up/managed/configed through doom, should be totally ignored
+/.config/emacs
+
+# listing these explicitly in case a new file gets added
+/.config/git/ignore
+/.config/chezmoi/chezmoi.toml
+/.config/chezmoi/chezmoistate.boltdb
+
