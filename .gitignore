@@ -211,16 +211,6 @@ lib/emacs/org-wiki/
 sesco/
 .kube/
 .ngrok2/
-sesco/
-
-.config/PixelPiracy/
-.config/StardewValley/
-.config/configstore/
-.config/gtk-2.0/
-.config/hub
-.config/inkscape/
-.config/stripe/
-.rush/
 
 
 # links to where the installed nix files are, but dont need
@@ -230,14 +220,6 @@ sesco/
 # home dir tmp
 /tmp
 
-# settings for an individual machine.
-# if there are some i'd like to have version controlled, can always change this.
-# (although I dont know why I wouldn't just use ~/.zshrc.${MACHINE_NAME}.sh for that)
-etc/machine-settings.sh
-
-# work stuff
-tvision
-
 # local haskell language server, do not want to addd
 bin/haskell-language-server-macOS-8.8.4
 
@@ -246,8 +228,6 @@ bin/haskell-language-server-macOS-8.8.4
 .zsh_sessions/
 wshs/result
 
-
-.config/pip/
 .cookiecutter_replay/
 .matplotlib/
 .pylint.d/
@@ -268,3 +248,5 @@ workstation/
 /.config/chezmoi/chezmoi.toml
 /.config/chezmoi/chezmoistate.boltdb
 
+# blargh
+/.config/StardewValley
