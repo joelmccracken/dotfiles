@@ -4,7 +4,7 @@
 .config/git
 .bashrc
 .ghci
-.hammerspoon/
+/.hammerspoon
 .nix-channels
 .npmrc
 .reddup.yml
@@ -229,6 +229,7 @@ sesco/
 
 # this contains the files for doom; should consider this an opaque blob
 .emacs.d
+/.config/emacs
 
 # home dir tmp
 /tmp
@@ -260,6 +261,9 @@ wshs/result
 .python_history
 .vim/
 workstation/
+.config/chezmoi/chezmoistate.boltdb
 
 # zsh autocompletion cache file, automatically created if missing
 .zcompdump
+
+/.doom.d
