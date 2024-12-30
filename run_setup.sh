@@ -6,8 +6,9 @@ rm -rf $HOME/.config/workstation
 unset WORKSTATION_DIR
 export WORKSTATION_NAME=angrist
 export WORKSTATION_VERSION
-WORKSTATION_VERSION="$(git log -n 1 --format="%H")"
+DOTFILES_VERSION="$(git log -n 1 --format="%H")"
+WORKSTATION_VERSION="$(cd ../ws; git log -n 1 --format="%H")"
 
-bash ws_install.sh
+bash <(curl "https://raw.githubusercontent.com/joelmccracken/ws/${WORKSTATION_VERSION}/ws_install.sh")
 
-~/.config/workstation/workstation_source/ws bootstrap -n angrist --initial-config-dir ./my_config
+$HOME/.config/workstation/workstation_source/ws bootstrap -n angrist --initial-config-dir .
