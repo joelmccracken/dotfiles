@@ -11,4 +11,6 @@ WORKSTATION_VERSION="$(cd ../ws; git log -n 1 --format="%H")"
 
 bash <(curl "https://raw.githubusercontent.com/joelmccracken/ws/${WORKSTATION_VERSION}/ws_install.sh")
 
-$HOME/.config/workstation/workstation_source/ws bootstrap -n angrist --initial-config-dir .
+$HOME/.config/workstation/workstation_source/ws bootstrap -n angrist \
+    --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' \
+    --initial-config-repo-ref "$DOTFILES_VERSION"
