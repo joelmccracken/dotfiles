@@ -2,3 +2,5 @@
 
 # ignore where the workstation source code is kept
 /workstation_source
+# ignore this, symlink to the file that shouldnt' be ignored
+/settings.current.sh
