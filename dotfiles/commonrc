@@ -10,10 +10,10 @@ sourceIfExists () {
 
 sourceIfExists "$HOME/.config/workstation/settings.current.sh"
 
-# export WORKSTATION_DIR="${WORKSTATION_DIR:-~/workstation}"
+export WORKSTATION_CONFIG_DIR="${WORKSTATION_CONFIG_DIR:-$HOME/.config/workstation}"
 
-# sourceIfExists ${WORKSTATION_DIR}/lib/shell/settings.sh
-# sourceIfExists ${WORKSTATION_DIR}/lib/shell/paths.sh
+sourceIfExists ${WORKSTATION_CONFIG_DIR}/lib/shell/settings.sh
+sourceIfExists ${WORKSTATION_CONFIG_DIR}/lib/shell/paths.sh
 # sourceIfExists ${WORKSTATION_DIR}/hosts/current/zshrc.sh
 
 export EDITOR=emacsclient
@@ -46,7 +46,5 @@ alert_when_done() {
 
 sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh
-sourceIfExists ~/workstation/lib/shell/funcs.sh
+# sourceIfExists ~/workstation/lib/shell/funcs.sh
 sourceIfExists ~/.ghcup/env
-
-sourceIfExists ${WORKSTATION_DIR}/lib/shell/funcs.sh
