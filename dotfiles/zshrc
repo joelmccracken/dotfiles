@@ -1,6 +1,6 @@
 # -*- mode: sh; sh-shell: zsh; -*-
 
-. "$HOME/.commonrc"
+. "$HOME/.config/workstation/dotfiles/commonrc"
 
 setopt append_history # append rather then overwrite
 setopt extended_history # save timestamp

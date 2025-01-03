@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-. "$HOME/.commonrc"
+. "$HOME/.config/workstation/dotfiles/commonrc"
 
 shopt -s checkwinsize
 shopt -s histappend
