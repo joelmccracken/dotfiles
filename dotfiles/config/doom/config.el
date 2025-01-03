@@ -33,20 +33,20 @@
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+;; (setq display-line-numbers-type t)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 ;; (setq org-directory "~/freckle/notes/")
 (setq org-directory "/Volumes/Personal/EF")
 
-(setq workstation-config-path
-      (concat (or (getenv "WORKSTATION_DIR")
-                  "~/workstation")
-              "/hosts/current/config.el"))
-
-(when (file-exists-p workstation-config-path)
-  (load workstation-config-path))
+(let* ((ws-name (getenv "WORKSTATION_NAME"))
+       (ws-cfg (concat (or (getenv "WORKSTATION_CONFIG_DIR") "~/.config/workstation")
+                       "/hosts/"
+                       (getenv "WORKSTATION_NAME")
+                       "/config.el")))
+  (when (and ws-name (file-exists-p workstation-config-path))
+    (load workstation-config-path)))
 
 (defun jnm/ef-ssh-belthronding ()
   "open EF via ssh on belthronding"
