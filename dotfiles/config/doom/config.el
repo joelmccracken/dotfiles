@@ -38,15 +38,14 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 ;; (setq org-directory "~/freckle/notes/")
-(setq org-directory "/Volumes/Personal/EF")
 
 (let* ((ws-name (getenv "WORKSTATION_NAME"))
        (ws-cfg (concat (or (getenv "WORKSTATION_CONFIG_DIR") "~/.config/workstation")
                        "/hosts/"
                        (getenv "WORKSTATION_NAME")
                        "/config.el")))
-  (when (and ws-name (file-exists-p workstation-config-path))
-    (load workstation-config-path)))
+  (when (and ws-name (file-exists-p ws-cfg))
+    (load ws-cfg)))
 
 (defun jnm/ef-ssh-belthronding ()
   "open EF via ssh on belthronding"
