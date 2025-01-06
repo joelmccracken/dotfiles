@@ -39,6 +39,17 @@
 ;; change `org-directory'. It must be set before org loads!
 ;; (setq org-directory "~/freckle/notes/")
 
+
+(defun jnm/org-common-config (dir)
+  (setq org-directory dir)
+  (setq org-roam-directory org-directory)
+  (setq org-roam-db-location (concat dir "/org-roam." (getenv "WS_NAME") ".db"))
+  (setq org-id-locations-file (concat dir "/.orgids.el"))
+  (setq org-agenda-files
+        (mapcar (lambda (f) (concat dir f))
+                (list "/actions.org" "/projects.org")))
+  (setq +org-capture-notes-file "inbox.org"))
+
 (let* ((ws-name (getenv "WS_NAME"))
        (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/workstation")
                        "/hosts/"
