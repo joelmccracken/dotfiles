@@ -39,10 +39,10 @@
 ;; change `org-directory'. It must be set before org loads!
 ;; (setq org-directory "~/freckle/notes/")
 
-(let* ((ws-name (getenv "WORKSTATION_NAME"))
-       (ws-cfg (concat (or (getenv "WORKSTATION_CONFIG_DIR") "~/.config/workstation")
+(let* ((ws-name (getenv "WS_NAME"))
+       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/workstation")
                        "/hosts/"
-                       (getenv "WORKSTATION_NAME")
+                       ws-name
                        "/config.el")))
   (when (and ws-name (file-exists-p ws-cfg))
     (load ws-cfg)))

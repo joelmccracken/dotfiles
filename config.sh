@@ -7,19 +7,19 @@ workstation_props_angrist+=(ws_prop_nix_global_config)
 workstation_props_angrist+=(ws_prop_df_dotfiles)
 
 workstation_props_dotfiles_angrist() {
-  dotfile --ln --dot bashrc
-  dotfile --ln --dot ghci
-  dotfile --ln --dot gitconfig
-  dotfile --ln --dot hammerspoon
-  dotfile --ln --dot nix-channels
-  dotfile --ln --dot npmrc
-  dotfile --ln --dot reddup.yml
-  dotfile --ln --dot zshrc
+  ws_df_dotfile --ln --dot bashrc
+  ws_df_dotfile --ln --dot ghci
+  ws_df_dotfile --ln --dot gitconfig
+  ws_df_dotfile --ln --dot hammerspoon
+  ws_df_dotfile --ln --dot nix-channels
+  ws_df_dotfile --ln --dot npmrc
+  ws_df_dotfile --ln --dot reddup.yml
+  ws_df_dotfile --ln --dot zshrc
 
-  dotfile --ln Brewfile
-  dotfile --ln Brewfile.lock.json
-  dotfile --ln bitbar
+  ws_df_dotfile --ln Brewfile
+  ws_df_dotfile --ln Brewfile.lock.json
+  ws_df_dotfile --ln bitbar
 
-  dotfile --ln --dot --dir config/git
-  dotfile --ln --dot --dir config/doom
+  ws_df_dotfile --ln --dot --dir config/git
+  ws_df_dotfile --ln --dot --dir config/doom
 }

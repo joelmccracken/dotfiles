@@ -10,11 +10,11 @@ sourceIfExists () {
 
 sourceIfExists "$HOME/.config/workstation/settings.current.sh"
 
-export WORKSTATION_CONFIG_DIR="${WORKSTATION_CONFIG_DIR:-$HOME/.config/workstation}"
+export WS_CONFIG="${WS_CONFIG:-$HOME/.config/workstation}"
 
-sourceIfExists ${WORKSTATION_CONFIG_DIR}/lib/shell/settings.sh
-sourceIfExists ${WORKSTATION_CONFIG_DIR}/lib/shell/paths.sh
-# sourceIfExists ${WORKSTATION_DIR}/hosts/current/zshrc.sh
+sourceIfExists ${WS_CONFIG}/lib/shell/settings.sh
+sourceIfExists ${WS_CONFIG}/lib/shell/paths.sh
+# sourceIfExists ${WS_DIR}/hosts/current/zshrc.sh
 
 export EDITOR=emacsclient
 export GIT_EDITOR=$EDITOR

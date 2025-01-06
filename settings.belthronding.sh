@@ -1,1 +1,1 @@
-export WORKSTATION_NAME=belthronding
+export WS_NAME=belthronding

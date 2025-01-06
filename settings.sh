@@ -1,3 +1,5 @@
+# -*- mode: sh; sh-shell: bash; -*-
+
 # the settings.sh file is used to define basic, global settings.
 
 # location of config dir
@@ -9,15 +11,15 @@
 # these things.
 
 # you may wish to customize this if you want your configuration somewhere else.
-# export WORKSTATION_CONFIG_DIR=$HOME/.config/workstation
+# export WS_CONFIG=$HOME/.config/workstation
 
 # location of workstation source. This is where the ws source code should live.
-# export WORKSTATION_DIR=$WORKSTATION_CONFIG_DIR/workstation_source
+# export WS_DIR=$WS_CONFIG/workstation_source
 
 # Workstation name to use.
 # Used to identify a machine, determine which settings it should have.
 # if you just have one, you can use this here and set it to `default`
-# export WORKSTATION_NAME=default
+# export WS_NAME=default
 
 # workstation_names is a regular variable, though it is used
 # for configuration. ws uses expected
@@ -29,7 +31,7 @@ workstation_descriptions_angrist="work computer"
 
 # at times it is necessary to specify settings differently on different workstations.
 # the following can be used to load those workstation-specific settings if such is needed.
-# [ -f "settings.${WORKSTATION_NAME}.sh"] && . "settings.${WORKSTATION_NAME}.sh"
+# [ -f "settings.${WS_NAME}.sh"] && . "settings.${WS_NAME}.sh"
 
 # one way to deal with differing sets is having a specific file symlinked to the file
 # for the current workstation config. For example, say I have two workstations, picard and janeway:
@@ -48,8 +50,8 @@ workstation_descriptions_angrist="work computer"
 # Oh yeah, be sure to ignore the settings.current.sh file. you do _not_ want to commit it.
 #   $ echo "settings.current.sh" >> .gitignore
 
-[ -f "${WORKSTATION_CONFIG_DIR}/settings.current.sh" ] && . "${WORKSTATION_CONFIG_DIR}/settings.current.sh" || return 0
+[ -f "${WS_CONFIG}/settings.current.sh" ] && . "${WS_CONFIG}/settings.current.sh" || return 0
 
 # Oh, you may wish to add the following to your shell profile file:
-# export WORKSTATION_CONFIG_DIR=/path/to/specific/location
-# export PATH="${WORKSTATION_DIR}/ws_tool:$PATH"
+# export WS_CONFIG=/path/to/specific/location
+# export PATH="${WS_DIR}/ws_tool:$PATH"

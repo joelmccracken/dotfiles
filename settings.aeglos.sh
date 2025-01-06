@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-export WORKSTATION_NAME=aeglos
+export WS_NAME=aeglos

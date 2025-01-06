@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
 
-export WORKSTATION_NAME=angrist
+export WS_NAME=angrist
