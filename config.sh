@@ -5,6 +5,7 @@ workstation_props_angrist+=(ws_prop_dotfiles_git_track)
 workstation_props_angrist+=(ws_prop_nix_daemon_installed)
 workstation_props_angrist+=(ws_prop_nix_global_config)
 workstation_props_angrist+=(ws_prop_df_dotfiles)
+workstation_props_angrist+=(ws_prop_nix_home_manager)
 
 workstation_props_dotfiles_angrist() {
   ws_df_dotfile --ln --dot bashrc
