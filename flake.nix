@@ -143,6 +143,9 @@
     in
       machineDefs [
         (macConfig {
+          user = "joel.mccracken"; hostname = "angrist"; system = "aarch64-darwin"; home = "/Users/joel.mccraken";
+        })
+        (macConfig {
           user = "joelmccracken"; hostname = "glamdring"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
         })
 
