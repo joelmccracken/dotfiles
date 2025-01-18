@@ -109,17 +109,17 @@
             system.stateVersion = 4;
           };
 
-      darwinConfig = settings:
-        darwin.lib.darwinSystem {
-          system = "x86_64-darwin";
-          modules = [
-            (nix-darwin-config settings)
-          ];
-        };
+      # darwinConfig = settings:
+      #   darwin.lib.darwinSystem {
+      #     system = "x86_64-darwin";
+      #     modules = [
+      #       (nix-darwin-config settings)
+      #     ];
+      #   };
 
       macConfig = settings:
         {
-          darwinConfigurations.${settings.hostname} = darwinConfig settings;
+          # darwinConfigurations.${settings.hostname} = darwinConfig settings;
 
           homeConfigurations.${settings.hostname}.${settings.user} = home-config (
             settings // { hmModule = darwin-home-manager; pkgs = darwin-nixpkgs;

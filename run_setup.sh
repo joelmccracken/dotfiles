@@ -8,6 +8,7 @@ while (( $# )); do
   case "$1" in
     (--fresh) fresh=x;;
     (--local) fresh=''; local_=x;;
+
     (*) echo unknown arg; exit 1;;
   esac
   shift
