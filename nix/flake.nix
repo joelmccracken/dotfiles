@@ -12,12 +12,13 @@
 
   outputs = { nixpkgs, home-manager, ... }:
     let home-config =
-          { homedir, username, config, pkgs, ... }:
+          { home, username }:
+          { config, pkgs, ... }:
             {
               # Home Manager needs a bit of information about you and the paths it should
               # manage.
-              home.username = homedir;
-              home.homeDirectory = username;
+              home.username = username;
+              home.homeDirectory = home;
 
               # This value determines the Home Manager release that your configuration is
               # compatible with. This helps avoid breakage when a new Home Manager release
@@ -96,7 +97,7 @@
 
         # Specify your home configuration modules here, for example,
         # the path to your home.nix.
-        modules = [ (home-config ./home.nix) ];
+        modules = [ (home-config { home="/Users/joel.mccraken"; username="joel.mccracken"; }) ];
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
