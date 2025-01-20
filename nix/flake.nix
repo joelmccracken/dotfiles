@@ -3,16 +3,17 @@
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
   outputs = { nixpkgs, home-manager, ... }:
-    let home-config =
-          { home, username }:
+    let
+      home-config =
+        { home, username }:
           { config, pkgs, ... }:
             {
               # Home Manager needs a bit of information about you and the paths it should
@@ -35,10 +36,14 @@
                 pkgs.git
                 pkgs.ripgrep
                 pkgs.jq
-                pkgs.jl
+                # it is broken because of course it is
+                # everything about nix being stable and repeatable is a lie
+                # pkgs.jl
                 pkgs.fd
                 pkgs.ispell
-                pkgs.bitwarden-cli
+                # it is broken because of course it is
+                # everything about nix is an lie
+                # pkgs.bitwarden-cli
                 pkgs.direnv
                 pkgs.mr  # myrepos https://myrepos.branchable.com/install/
                 pkgs.graphviz
@@ -61,6 +66,15 @@
                 #   org.gradle.console=verbose
                 #   org.gradle.daemon.idletimeout=3600000
                 # '';
+              };
+
+              home.sessionPath = [
+                "~/.nix-profile/bin/"
+              ];
+
+              programs.emacs = {
+                enable = true;
+                extraPackages = epkgs: [ epkgs.vterm epkgs.sqlite];
               };
 
               # Home Manager can also manage your environment variables through
@@ -88,17 +102,23 @@
             };
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
-
     in {
       homeConfigurations."angrist"."joel.mccracken" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
         # Specify your home configuration modules here, for example,
         # the path to your home.nix.
-        modules = [ (home-config { home="/Users/joel.mccraken"; username="joel.mccracken"; }) ];
+        modules = [
+          (home-config {
+            home="/Users/joel.mccraken";
+            username="joel.mccracken";
+          })
+        ];
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
       };
     };
 }
+
+# nix run -v -L ".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage" --show-trace
