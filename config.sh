@@ -24,3 +24,6 @@ workstation_props_dotfiles_angrist() {
   ws_df_dotfile --ln --dot --dir config/git
   ws_df_dotfile --ln --dot --dir config/doom
 }
+
+# TODO should be in settings? will be different depending upon machine
+WS_PROP_NIX_HOME_MANAGER_FLAKE_OUTPUT=".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage"
