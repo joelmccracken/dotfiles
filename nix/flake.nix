@@ -1,9 +1,9 @@
 {
-  description = "Home Manager configuration of joel.mccracken";
+  description = "Joel's workstation, the nix bits n bobs";
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -122,3 +122,4 @@
 }
 
 # nix run -v -L ".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage" --show-trace
+# nix build -v -L ".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage" --show-trace --dry-run
