@@ -74,7 +74,7 @@
 
               programs.emacs = {
                 enable = true;
-                extraPackages = epkgs: [ epkgs.vterm epkgs.sqlite];
+                extraPackages = epkgs: [ epkgs.vterm ];
               };
 
               # Home Manager can also manage your environment variables through
