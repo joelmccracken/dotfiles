@@ -19,8 +19,8 @@ workstation_props_dotfiles_angrist() {
   ws_df_dotfile --ln --dot reddup.yml
   ws_df_dotfile --ln --dot zshrc
 
-  ws_df_dotfile --ln Brewfile
-  ws_df_dotfile --ln Brewfile.lock.json
+#  ws_df_dotfile --ln Brewfile
+#  ws_df_dotfile --ln Brewfile.lock.json
   ws_df_dotfile --ln bitbar
 
   ws_df_dotfile --ln --dot --dir config/git
