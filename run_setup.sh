@@ -30,14 +30,14 @@ if [[ -n "$fresh" ]]; then
 
   bash <(curl -L "https://raw.githubusercontent.com/joelmccracken/ws/${WS_VERSION}/ws_install.sh")
 
-  $HOME/.config/workstation/vendor/ws/ws bootstrap -n angrist \
+  $HOME/.local/share/ws/ws bootstrap -n angrist \
       --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' \
       --initial-config-repo-ref "$DOTFILES_VERSION"
 elif [[ -n "$local_" ]]; then
   ( cd ..;
     rsync -r dotfiles/ "$HOME/.config/workstation";)
   ( cd ..;
-    rsync -r ws/ "$HOME/.config/workstation/vendor/ws";)
+    rsync -r ws/ "$HOME/.local/share/ws";)
 
-  $HOME/.config/workstation/vendor/ws/ws bootstrap -n angrist
+  $HOME/.local/share/ws/ws bootstrap -n angrist
 fi
