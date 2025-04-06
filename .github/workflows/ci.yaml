@@ -28,8 +28,11 @@ jobs:
       - name: 'Debug Environment'
         shell: bash -leo pipefail {0}
         run: |
-          env
-          jq '.' <<< "${{ toJson(github) }}"
+          env | sort
+          cat > all_json <<-EOF
+            ${{ toJson(github) }}
+          EOF
+          jq '.' all_json
           # output github context
           cat <<-EGITHUB
             run?
