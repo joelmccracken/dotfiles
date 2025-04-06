@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: master
+  schedule:
+  - cron: '0 0 * * *'  # every day at midnight
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+        # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+        - macos-13 # x86
+        - macos-latest # aarch
+        - ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: 'Debug Environment'
+        shell: bash -leo pipefail {0}
+        run: |
+          # output github context
+          cat <<-EGITHUB
+            run?
+            ${{ toJson( github.event_name == 'push' || ( github.event_name == 'pull_request' && toJson(github.event.pull_request.draft) == 'false' && toJson(github.event.pull_request.state) == '"open"' && toJson(github.event.pull_request.assignees) != '[]' ) ) }}
+
+            github.event_name:
+            ${{ toJson(github.event_name) }}
+
+            github.event.pull_request.draft:
+            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.draft) }}
+
+            github.event.pull_request.state:
+            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.state) }}
+
+            github.event.pull_request.assignees:
+            ${{ github.event_name == 'pull_request' && toJson( toJson(github.event.pull_request.assignees) != '[]' ) }}
+
+            github.repository:
+            ${{ toJson(github.repository) }}
+
+            github.event.pull_request.head.repo.full_name:
+            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.head.repo.full_name) }}
+
+            github.event.pull_request.head.sha:
+            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.head.sha) }}
+
+            github.sha:
+            ${{ toJson(github.sha) }}
+
+            github.ref
+            ${{ toJson(github.ref) }}
+
+            resolved slug:
+            ${{ toJson(github.event.pull_request.head.repo.full_name || github.repository) }}
+
+            resolved sha:
+            ${{ toJson(github.event.pull_request.head.sha || github.sha) }}
+
+            github:
+            ${{ false && toJson(github) }}
+          EGITHUB
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.0
+      - run: env
+      - run: bash test/ci.sh
+
+      # - run: test/bats/bin/bats test
+      #   env:
+      #     WS_VERSION: ${{ github.event.pull_request.head.sha }}
+      #     BW_CLIENTID: ${{ secrets.BW_CLIENTID }}
+      #     BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
+      #     WS_BW_MASTER_PASS: ${{ secrets.WS_BW_MASTER_PASS }}
+
+  # full-setup:
+  #   strategy:
+  #     matrix:
+  #       os:
+  #       # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+  #       - macos-13 # x86
+  #       - macos-latest # aarch
+  #       - ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+  #         ref: ${{ github.event.pull_request.head.sha || env.GITHUB_SHA }}
+  #     - run: bash test/ci_full_setup.bash
+  #       env:
+  #         WS_VERSION: ${{ github.event.pull_request.head.sha || env.GITHUB_SHA }}
+  #         BW_CLIENTID: ${{ secrets.BW_CLIENTID }}
+  #         BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
+  #         WS_BW_MASTER_PASS: ${{ secrets.WS_BW_MASTER_PASS }}
