@@ -25,60 +25,17 @@ jobs:
       contents: read
     runs-on: ${{ matrix.os }}
     steps:
-      - name: 'Debug Environment'
-        shell: bash -leo pipefail {0}
-        run: |
-          env | sort
-          cat > all_json <<-EOF
-            ${{ toJson(github) }}
-          EOF
-          jq '.' all_json
-          # output github context
-          cat <<-EGITHUB
-            run?
-            ${{ toJson( github.event_name == 'push' || ( github.event_name == 'pull_request' && toJson(github.event.pull_request.draft) == 'false' && toJson(github.event.pull_request.state) == '"open"' && toJson(github.event.pull_request.assignees) != '[]' ) ) }}
-
-            github.event_name:
-            ${{ toJson(github.event_name) }}
-
-            github.event.pull_request.draft:
-            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.draft) }}
-
-            github.event.pull_request.state:
-            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.state) }}
-
-            github.event.pull_request.assignees:
-            ${{ github.event_name == 'pull_request' && toJson( toJson(github.event.pull_request.assignees) != '[]' ) }}
-
-            github.repository:
-            ${{ toJson(github.repository) }}
-
-            github.event.pull_request.head.repo.full_name:
-            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.head.repo.full_name) }}
-
-            github.event.pull_request.head.sha:
-            ${{ github.event_name == 'pull_request' && toJson(github.event.pull_request.head.sha) }}
-
-            github.sha:
-            ${{ toJson(github.sha) }}
-
-            github.ref
-            ${{ toJson(github.ref) }}
-
-            resolved slug:
-            ${{ toJson(github.event.pull_request.head.repo.full_name || github.repository) }}
-
-            resolved sha:
-            ${{ toJson(github.event.pull_request.head.sha || github.sha) }}
-
-            github:
-            ${{ false && toJson(github) }}
-          EGITHUB
-
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: 'Debug Environment'
+        shell: bash -leo pipefail {0}
+        env:
+          GITHUB_JSON_PAYLOAD: ${{ toJson(github) }}
+        run: |
+          bash test/ci-debug.sh
+
       - name: Setup Bats and bats libs
         id: setup-bats
         uses: bats-core/bats-action@3.0.0
