@@ -32,6 +32,10 @@ jobs:
           cat <<-EOF
           ${{ toJson(github) }}
           EOF
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          ref: ${{ github.event.pull_request.head.sha }}
       - run: bash test/ci.sh
         env:
           WS_VERSION: refs/heads/master
