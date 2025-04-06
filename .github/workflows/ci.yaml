@@ -34,7 +34,7 @@ jobs:
         run: |
           env | sort
           cat <<-EOF
-            toJson(github)
+          ${{ toJson(github) }}
           EOF
 
       - name: Setup Bats and bats libs
