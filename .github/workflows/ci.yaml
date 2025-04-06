@@ -38,6 +38,6 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - run: bash test/ci.sh
         env:
-          WS_PRE_BOOTSTRAP_VERSION: refs/heads/master
-          WS_VERSION: refs/remotes/origin/master
+          WS_VERSION: refs/heads/master
+          WS_VERSION_REPO_FIX: refs/remotes/origin/master
           DOTFILES_SHA: ${{ github.event.pull_request.head.sha }}
