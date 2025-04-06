@@ -17,8 +17,8 @@ jobs:
       matrix:
         os:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
-        - macos-13 # x86
-        - macos-latest # aarch
+        # - macos-13 # x86
+        # - macos-latest # aarch
         - ubuntu-latest
     permissions:
       id-token: write
@@ -28,6 +28,8 @@ jobs:
       - name: 'Debug Environment'
         shell: bash -leo pipefail {0}
         run: |
+          env
+          jq '.' <<< "${{ toJson(github) }}"
           # output github context
           cat <<-EGITHUB
             run?
@@ -77,7 +79,6 @@ jobs:
       - name: Setup Bats and bats libs
         id: setup-bats
         uses: bats-core/bats-action@3.0.0
-      - run: env
       - run: bash test/ci.sh
 
       # - run: test/bats/bin/bats test
