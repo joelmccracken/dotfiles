@@ -31,10 +31,11 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Debug Environment'
         shell: bash -leo pipefail {0}
-        env:
-          GITHUB_JSON_PAYLOAD: ${{ toJson(github) }}
         run: |
-          bash test/ci-debug.sh
+          env | sort
+          cat <<-EOF
+            toJson(github)
+          EOF
 
       - name: Setup Bats and bats libs
         id: setup-bats
