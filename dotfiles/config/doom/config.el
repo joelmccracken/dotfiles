@@ -130,7 +130,7 @@
 
 (load-theme 'tsdh-light)
 
-;; (setq twelf-root "~/vendor/twelf/")
+;; (setq twelf-root "~/.local/share/twelf/")
 ;; (load (concat twelf-root "emacs/twelf-init.el"))
 
 
