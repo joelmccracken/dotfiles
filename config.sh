@@ -28,11 +28,11 @@ workstation_props_dotfiles_angrist() {
 }
 
 # TODO should be in settings? will be different depending upon machine
-WS_PROP_NIX_HOME_MANAGER_FLAKE_OUTPUT=".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage"
+WS_PROP_NIX_HOME_MANAGER_FLAKE_OUTPUT=".#homeConfigurations.\"angrist\".\"joel.mccracken\".activationPackage";
 
 # since I am working on this frequently, and often just using the currently installed version,
 # I want the 'git' origin value (so I can push after testing a fresh setup)
-WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git"
+WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git";
 
 
 
@@ -40,14 +40,14 @@ WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git"
 
 
 # config just for CI below
-workstation_props_ci-macos=("${workstation_props_angrist[@]}")
+workstation_props_ci_macos=("${workstation_props_angrist[@]}")
 
-workstation_props_ci-ubuntu=("${workstation_props_angrist[@]}")
+workstation_props_ci_ubuntu=("${workstation_props_angrist[@]}")
 
-workstation_props_dotfiles_ci-macos() {
+workstation_props_dotfiles_ci_macos() {
   workstation_props_dotfiles_angrist
 }
 
-workstation_props_dotfiles_ci-ubuntu() {
+workstation_props_dotfiles_ci_ubuntu() {
   workstation_props_dotfiles_angrist
 }
