@@ -42,7 +42,8 @@
 
 (defun jnm/org-common-config (dir)
   (setq org-directory dir)
-  (setq org-roam-directory org-directory)
+  (setq org-roam-directory (concat org-directory "zettel/"))
+
   (setq org-roam-db-location (concat dir "/org-roam." (getenv "WS_NAME") ".db"))
   (setq org-id-locations-file (concat dir "/.orgids.el"))
   (setq org-agenda-files
@@ -51,7 +52,7 @@
   (setq +org-capture-notes-file "inbox.org"))
 
 (let* ((ws-name (getenv "WS_NAME"))
-       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/workstation")
+       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/workstation/")
                        "/hosts/"
                        ws-name
                        "/config.el")))
