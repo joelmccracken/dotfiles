@@ -18,59 +18,13 @@
 
   outputs = { nixpkgs-linux, nixpkgs-darwin, home-manager-linux, home-manager-darwin, ... }:
     let
-
-      home-config-mod =
-        { home, username }:
-          { config, pkgs, ... }:
-            {
-              home.username = username;
-              home.homeDirectory = home;
-
-              home.stateVersion = "24.11";
-              home.packages = [
-                pkgs.git
-                pkgs.ripgrep
-                pkgs.jq
-                # it is broken because of course it is
-                # everything about nix being stable and repeatable is a lie
-                # pkgs.jl
-                pkgs.fd
-                pkgs.ispell
-                # it is broken because of course it is
-                # everything about nix is an lie
-                # pkgs.bitwarden-cli
-                pkgs.direnv
-                pkgs.mr  # myrepos https://myrepos.branchable.com/install/
-                pkgs.graphviz
-                pkgs.cmake
-                pkgs.coreutils
-                pkgs.wget
-                pkgs.racket
-              ];
-
-              home.file = {};
-
-              home.sessionPath = [
-                "~/.nix-profile/bin/"
-              ];
-
-              programs.emacs = {
-                enable = true;
-                extraPackages = epkgs: [ epkgs.vterm ];
-              };
-
-              home.sessionVariables = {};
-
-              programs.home-manager.enable = true;
-            };
-
-      home-config = settings@{nixpkgs, system, home, username, home-manager, ...}:
+      home-config = settings@{nixpkgs, system, home, user, home-manager, ...}:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           home-config-mod =
               { config, pkgs, ... }:
                 {
-                  home.username = username;
+                  home.username = user;
                   home.homeDirectory = home;
 
                   home.stateVersion = "24.11";
@@ -118,7 +72,7 @@
 
       macConfig = settings:
         {
-          homeConfigurations.${settings.hostname}.${settings.user} = home-config (
+          homeConfigurations.${settings.ws-name}.${settings.user} = home-config (
             settings // { home-manager = home-manager-darwin; nixpkgs = nixpkgs-darwin; }
           );
         };
