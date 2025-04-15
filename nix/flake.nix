@@ -13,7 +13,6 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs-linux";
     };
-
   };
 
   outputs = { nixpkgs-linux, nixpkgs-darwin, home-manager-linux, home-manager-darwin, ... }:
@@ -105,11 +104,11 @@
         })
 
         (macConfig {
-          user = "runner"; ws-name = "ci-macos"; system = "x86_64-darwin"; home = "/Users/runner";
+          user = "runner"; ws-name = "ci_macos"; system = "x86_64-darwin"; home = "/Users/runner";
         })
 
         (linuxConfig {
-          user = "runner"; ws-name = "ci-ubuntu"; system = "x86_64-linux"; home = "/home/runner";
+          user = "runner"; ws-name = "ci_ubuntu"; system = "x86_64-linux"; home = "/home/runner";
         })
       ];
 
