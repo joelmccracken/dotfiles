@@ -57,6 +57,7 @@
                   programs.emacs = {
                     enable = true;
                     extraPackages = epkgs: [ epkgs.vterm ];
+                    package = (pkgs.emacs.override {withNativeCompilation = false; });
                   };
 
                   home.sessionVariables = {};
