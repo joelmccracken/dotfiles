@@ -41,14 +41,14 @@
 
 
 (defun jnm/org-common-config (dir)
-  (setq org-directory dir)
+  (setq org-directory (file-name-as-directory dir))
   (setq org-roam-directory (concat org-directory "zettel/"))
 
-  (setq org-roam-db-location (concat dir "/org-roam." (getenv "WS_NAME") ".db"))
-  (setq org-id-locations-file (concat dir "/.orgids.el"))
+  (setq org-roam-db-location (concat org-directory "org-roam." (getenv "WS_NAME") ".db"))
+  (setq org-id-locations-file (concat org-directory ".orgids.el"))
   (setq org-agenda-files
-        (mapcar (lambda (f) (concat dir f))
-                (list "/actions.org" "/projects.org")))
+        (mapcar (lambda (f) (concat org-directory f))
+                (list "actions.org" "projects.org")))
   (setq +org-capture-notes-file "inbox.org"))
 
 (let* ((ws-name (getenv "WS_NAME"))
