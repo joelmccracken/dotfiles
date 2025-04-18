@@ -38,8 +38,10 @@ jobs:
         with:
           submodules: recursive
           ref: ${{ github.event.pull_request.head.sha }}
-      - run: bash test/ci.sh
-        env:
+      - env:
           WS_VERSION: refs/heads/master
           WS_VERSION_REPO_FIX: refs/remotes/origin/master
           DOTFILES_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          bash test/ci.sh
+          bash test/ci_test.sh
