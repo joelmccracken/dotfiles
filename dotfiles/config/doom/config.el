@@ -63,14 +63,19 @@
   "open EF via ssh on belthronding"
   (interactive)
   ;; (find-file "/ssh:joel@belthronding.wildkraken.monster:~/EF/")
-  (find-file "/ssh:joel@137.184.110.5:~/EF/") ;;
-  )
+  (find-file "/ssh:joel@137.184.110.5:~/EF/"))
 
-(map! "C-c e" #'jnm/ef-ssh-belthronding)
-(map! "C-c d" #'org-timestamp-inactive)
+(defun jnm/org-ts ()
+  "make sure org is loaded, call org-timestamp-inactive"
+  (interactive)
+  (require 'org)
+  (call-interactively #'org-timestamp-inactive))
 
-;; (map! :leader "SPC"
-;;       :n "SPC SPC e" #'jnm/ef-ssh-belthronding)
+(map! :leader (:prefix-map ("SPC" . "custom keybinds")
+                           "e" #'jnm/ef-ssh-belthronding
+                           "d" #'jnm/org-ts
+                           ))
+
 
 (after! +popup
   ;; added here to change the behavior of *info* buffers (set :quit to nil)
