@@ -126,15 +126,74 @@
 
   (setq org-src-preserve-indentation t)
   (setq org-adapt-indentation t)
-  (setq org-startup-indented t))
+  (setq org-startup-indented t)
+
+  ;; set indentation for src blocks
+  ;; this does all the cases I care about.
+  ;; i'm not sure what downsides of this config setup might be.
+  ;; TODO it might be worth writing a blog post/tech note about this topic
+  ;; examine the various cases and what I care about: indented src block cookies
+  ;; below a simple list item, it will add spaces to the body of src block intelligently;
+  ;; doesn't do it when using the default doom emacs insert/snippet code, but
+  ;; easily fixable (the block cookies are indented as desired, but no
+  ;; indentation for block content)
+  (setq org-edit-src-content-indentation 2)
+  (setq org-src-preserve-indentation nil))
+
+;; (set-face-attribute 'default nil :family "Iosevka")
+;; (set-face-attribute 'variable-pitch nil :family "Iosevka Aile")
+;; (set-face-attribute 'org-modern-symbol nil :family "Iosevka")
+
+(after! org-modern
+  ;; recent as of [2025-04-28 Mon] changes to doom emacs config has +pretty
+  ;; use org-modern, and the default font doesn't render
+  (set-face-attribute 'org-modern-symbol nil :family "Iosevka Term"))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
+;; (setq display-line-numbers-type t)
 
 (setq global-flycheck-mode nil)
 
-(load-theme 'tsdh-light)
+
+;; (load-theme 'tsdh-light)
+;;
+
+(load-theme 'modus-operandi)
+(modus-themes-load-theme 'modus-operandi)
+
+;; (setq
+;;  ;; Edit settings
+;;  org-auto-align-tags nil
+;;  org-tags-column 0
+;;  org-fold-catch-invisible-edits 'show-and-error
+;;  org-special-ctrl-a/e t
+;;  org-insert-heading-respect-content t
+
+;;  ;; Org styling, hide markup etc.
+;;  org-hide-emphasis-markers t
+;;  org-pretty-entities t
+;;  org-agenda-tags-column 0
+;;  org-ellipsis "…")
+
+;; (global-org-modern-mode)
+
+
+(setq org-ellipsis "…")
+
+;; (modify-all-frames-parameters
+;;  '((right-divider-width . 20)
+;;    (internal-border-width . 20)))
+
+(dolist (face '(window-divider
+                window-divider-first-pixel
+                window-divider-last-pixel))
+  (face-spec-reset-face face)
+  (set-face-foreground face (face-attribute 'default :background)))
+
+(set-face-background 'fringe (face-attribute 'default :background))
+
+(global-org-modern-mode)
 
 ;; (setq twelf-root "~/.local/share/twelf/")
 ;; (load (concat twelf-root "emacs/twelf-init.el"))

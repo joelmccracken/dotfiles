@@ -54,3 +54,5 @@
 
 (package! vline)
 ;; (package! xhair)
+
+(package! denote)
