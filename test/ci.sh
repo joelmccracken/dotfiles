@@ -22,5 +22,6 @@ $HOME/.local/share/ws/ws -v bootstrap -n "$CI_WS_NAME" \
 
 
     cd ~/.config/workstation/nix;
-    nix run -v -L '.#homeConfigurations."ci_ubuntu"."runner"' --show-trace
+    nix build  --show-trace -v -L '.#homeConfigurations.ci_ubuntu.runner'
+    nix run  --show-trace -v -L '.#homeConfigurations.ci_ubuntu.runner'
 }
