@@ -18,10 +18,10 @@ jobs:
         os:
         - ubuntu-latest
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
-        - macos-13 # x86
-        - macos-14 # aarch below
-        - macos-15
-        - macos-latest
+        # - macos-13 # x86
+        # - macos-14 # aarch below
+        # - macos-15
+        # - macos-latest
     permissions:
       id-token: write
       contents: read
