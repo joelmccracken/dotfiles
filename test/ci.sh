@@ -3,6 +3,10 @@
 set -x
 bash <(curl -L "https://raw.githubusercontent.com/joelmccracken/ws/${WS_VERSION}/ws_install.sh")
 
+
+env
+
+
 if [ "$RUNNER_OS" == "macOS" ]; then
     CI_WS_NAME=ci_macos
 else
