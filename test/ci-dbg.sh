@@ -37,6 +37,8 @@ EOF
 sudo mv nix.conf /etc/nix/nix.conf
 
 
+tree /etc/nix
+cat /etc/nix/nix.conf
 set +e
 sudo launchctl unload /Library/LaunchDaemons/org.nixos.nix-daemon.plist
 sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist
