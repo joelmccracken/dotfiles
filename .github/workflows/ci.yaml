@@ -12,7 +12,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  # test:
+  #   strategy:
+  #     matrix:
+  #       os:
+  #       # - ubuntu-latest
+  #       # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories
+  #       # - macos-13 # x86
+  #       # - macos-14 # aarch below
+  #       - macos-15
+  #       # - macos-latest
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #     - name: 'Debug Environment'
+  #       shell: bash -leo pipefail {0}
+  #       run: |
+  #         env | sort
+  #         cat <<-EOF
+  #         ${{ toJson(github) }}
+  #         EOF
+  #     - uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+  #         ref: ${{ github.event.pull_request.head.sha }}
+  #     - env:
+  #         WS_VERSION: refs/heads/master
+  #         WS_VERSION_REPO_FIX: refs/remotes/origin/master
+  #         DOTFILES_SHA: ${{ github.event.pull_request.head.sha }}
+  #       run: |
+  #         bash test/ci.sh
+  #         bash test/ci_test.sh
+  test-dbg:
     strategy:
       matrix:
         os:
@@ -38,10 +71,5 @@ jobs:
         with:
           submodules: recursive
           ref: ${{ github.event.pull_request.head.sha }}
-      - env:
-          WS_VERSION: refs/heads/master
-          WS_VERSION_REPO_FIX: refs/remotes/origin/master
-          DOTFILES_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          bash test/ci.sh
-          bash test/ci_test.sh
+      - run: |
+          bash test/ci-dbg.sh
