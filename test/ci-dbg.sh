@@ -45,6 +45,6 @@ sudo launchctl load /Library/LaunchDaemons/org.nixos.nix-daemon.plist
 set -e
 
 cd nix/
-flake_out='.#homeConfigurations."${runner@ci_macos}".activationPackage';
+flake_out='.#homeConfigurations."runner@ci_macos".activationPackage';
 nix --log-format raw --debug -v -L --show-trace build "${flake_out}";
 nix --log-format raw --debug -v -L --show-trace run "${flake_out}";
