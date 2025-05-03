@@ -13,15 +13,13 @@ fi
 
 $HOME/.local/share/ws/ws -v bootstrap -n "$CI_WS_NAME" \
     --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' \
-    --initial-config-repo-ref "$DOTFILES_SHA" || {
+    --initial-config-repo-ref "$DOTFILES_SHA" # || {
 
-  nix_daemon_profile='/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-  set +u
-  . "$nix_daemon_profile";
-  set -u
-
-
-    cd ~/.config/workstation/nix;
-    nix build  --show-trace -v -L '.#homeConfigurations.ci_ubuntu.runner'
-    nix run  --show-trace -v -L '.#homeConfigurations.ci_ubuntu.runner'
-}
+#   nix_daemon_profile='/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+#   set +u
+#   . "$nix_daemon_profile";
+#   set -u
+#     cd ~/.config/workstation/nix;
+#     nix build  --show-trace -v -L '.#homeConfigurations.ci_macos.runner'
+#     nix run  --show-trace -v -L '.#homeConfigurations.ci_macos.runner'
+# }
