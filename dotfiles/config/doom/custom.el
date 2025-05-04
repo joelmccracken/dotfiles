@@ -8,7 +8,13 @@
  '(ignored-local-variable-values '((checkdoc-allow-quoting-nil-and-t . t)))
  '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(safe-local-variable-values
-   '((elisp-lint-indent-specs (describe . 1) (it . 1) (thread-first . 0)
+   '((eval add-hook 'before-save-hook
+      (lambda nil
+        (if (fboundp 'org-make-toc) (org-make-toc)
+          (message-box "Please install org-make-toc.")))
+      nil t)
+     (org-edit-src-content-indentation 0)
+     (elisp-lint-indent-specs (describe . 1) (it . 1) (thread-first . 0)
       (cl-flet . 1) (cl-flet* . 1) (org-element-map . defun)
       (org-roam-dolist-with-progress . 2) (org-roam-with-temp-buffer . 1)
       (org-with-point-at . 1) (magit-insert-section . defun)

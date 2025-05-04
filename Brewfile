@@ -1,6 +1,4 @@
 # -*- mode: ruby -*-
-tap "homebrew/bundle"
-
 brew "haskell-stack"
 brew "bitwarden-cli"
 
