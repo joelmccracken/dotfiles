@@ -6,8 +6,8 @@ workstation_props_angrist+=(ws_prop_nix_daemon_installed)
 workstation_props_angrist+=(ws_prop_nix_global_config)
 workstation_props_angrist+=(ws_prop_df_dotfiles)
 workstation_props_angrist+=(ws_prop_nix_home_manager)
-workstation_props_angrist+=(ws_prop_bitwarden_secrets)
 workstation_props_angrist+=(ws_prop_homebrew_bundle)
+workstation_props_angrist+=(ws_prop_bitwarden_secrets) # needs brew bundle
 
 workstation_props_dotfiles_angrist() {
   ws_df_dotfile --ln --dot bashrc
@@ -31,7 +31,7 @@ workstation_props_dotfiles_angrist() {
 # I want the 'git' origin value (so I can push after testing a fresh setup)
 WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git";
 
-
+# testing 123
 # config just for CI below
 workstation_props_ci_macos=("${workstation_props_angrist[@]}")
 
