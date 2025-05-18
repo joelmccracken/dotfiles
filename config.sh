@@ -31,7 +31,13 @@ workstation_props_dotfiles_angrist() {
 # I want the 'git' origin value (so I can push after testing a fresh setup)
 WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git";
 
-# testing 123
+
+workstation_props_glamdring=("${workstation_props_angrist[@]}")
+workstation_props_dotfiles_glamdring() {
+  workstation_props_dotfiles_angrist
+}
+
+
 # config just for CI below
 workstation_props_ci_macos=("${workstation_props_angrist[@]}")
 
