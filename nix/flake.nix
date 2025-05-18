@@ -100,6 +100,10 @@
           user = "joel"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joel";
         })
 
+        (macConfig {
+          user = "joel"; ws-name = "glamdring"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
+        })
+
         (linuxConfig {
           user = "joel"; ws-name = "belthronding"; system = "x86_64-linux"; home = "/home/joel";
         })
