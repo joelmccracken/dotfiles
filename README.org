@@ -2,3 +2,23 @@
 
 
 new home for my dotfiles/config working with ws tool
+
+
+
+* usage/setup
+
+set bitwarden creds for secrets setup, so secrets can be synchronized
+#+begin_src sh
+export WS_BW_EMAIL='...'
+export WS_BW_MASTER_PASS='...'
+#+end_src
+
+run the initial install script, sets up ws tool
+#+begin_src sh
+bash <(curl "https://raw.githubusercontent.com/joelmccracken/ws/master/ws_install.sh")        ~
+#+end_src
+
+execute the bootstrap script
+#+begin_src sh
+~/.local/share/ws/ws bootstrap -n glamdring --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' --initial-config-repo-ref 'refs/heads/jnm/add-test-script'
+#+end_src
