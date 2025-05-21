@@ -1,7 +1,6 @@
 # -*- mode: ruby -*-
-tap "homebrew/bundle"
-
 brew "haskell-stack"
+brew "bitwarden-cli"
 
 # casks
 cask "hammerspoon"
@@ -13,3 +12,5 @@ cask "dropbox"
 # the gui functionality is broken at time of writing,
 # so cask racket instead
 cask "racket"
+
+cask "font-iosevka"
