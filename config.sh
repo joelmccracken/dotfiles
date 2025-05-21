@@ -32,8 +32,8 @@ workstation_props_dotfiles_angrist() {
 WS_REPO_ORIGIN="git@github.com:joelmccracken/ws.git";
 
 
-workstation_props_glamdring=("${workstation_props_angrist[@]}")
-workstation_props_dotfiles_glamdring() {
+workstation_props_aeglos=("${workstation_props_angrist[@]}")
+workstation_props_dotfiles_aeglos() {
   workstation_props_dotfiles_angrist
 }
 

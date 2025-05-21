@@ -97,11 +97,7 @@
         })
 
         (macConfig {
-          user = "joel"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joel";
-        })
-
-        (macConfig {
-          user = "joelmccracken"; ws-name = "glamdring"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
+          user = "joelmccracken"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
         })
 
         (linuxConfig {

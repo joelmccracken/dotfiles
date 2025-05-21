@@ -20,5 +20,5 @@ bash <(curl "https://raw.githubusercontent.com/joelmccracken/ws/master/ws_instal
 
 execute the bootstrap script
 #+begin_src sh
-~/.local/share/ws/ws bootstrap -n glamdring --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' --initial-config-repo-ref 'refs/heads/jnm/add-test-script'
+~/.local/share/ws/ws bootstrap -n aeglos --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' --initial-config-repo-ref 'refs/heads/jnm/add-test-script'
 #+end_src
