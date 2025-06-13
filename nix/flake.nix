@@ -35,6 +35,7 @@
                     # everything about nix being stable and repeatable is a lie
                     # pkgs.jl
                     pkgs.fd
+                    pkgs.go
                     pkgs.ispell
                     # it is broken because of course it is
                     # everything about nix is an lie
