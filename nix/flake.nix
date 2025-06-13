@@ -35,6 +35,7 @@
                     # everything about nix being stable and repeatable is a lie
                     # pkgs.jl
                     pkgs.fd
+                    pkgs.go
                     pkgs.ispell
                     # it is broken because of course it is
                     # everything about nix is an lie
@@ -72,14 +73,14 @@
 
       macConfig = settings:
         {
-          homeConfigurations.${settings.ws-name}.${settings.user} = home-config (
+          homeConfigurations."${settings.user}@${settings.ws-name}" = home-config (
             settings // { home-manager = home-manager-darwin; nixpkgs = nixpkgs-darwin; }
           );
         };
 
       linuxConfig = settings:
         {
-          homeConfigurations.${settings.ws-name}.${settings.user} = home-config (
+          homeConfigurations."${settings.user}@${settings.ws-name}" = home-config (
             settings // { home-manager = home-manager-linux;  nixpkgs = nixpkgs-linux; }
           );
         };
@@ -97,7 +98,7 @@
         })
 
         (macConfig {
-          user = "joel"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joel";
+          user = "joelmccracken"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
         })
 
         (linuxConfig {

@@ -29,6 +29,8 @@ export HISTSIZE=10000
 export HISTCONTROL=ignoreboth
 export HISTFILESIZE=2000
 
+export GOPATH="$HOME/.local/share/go"
+
 do_command_done_alert() {
     osascript -e 'display dialog "Command Done!"'
 }
