@@ -46,6 +46,7 @@ jobs:
           BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
           WS_BW_MASTER_PASS: ${{ secrets.WS_BW_MASTER_PASS }}
         run: |
+          env
           bash test/ci.sh
           bash test/ci_test.sh
 
