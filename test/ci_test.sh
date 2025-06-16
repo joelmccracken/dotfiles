@@ -15,11 +15,12 @@ set +u
 source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
 set -u
 
-source ${WS_DIR}/lib/shell/foundation.sh
+$HOME/.local/share/ws/ws
 
 find_emacs_init() {
   init_file="";
-  for x in "$WORKSTATION_EMACS_CONFIG_DIR/early-init.el" "$WORKSTATION_EMACS_CONFIG_DIR/init.el"; do
+  EMACS_DIR="$HOME/.config/emacs"
+  for x in "$EMACS_DIR/early-init.el" "$EMACS_DIR/init.el"; do
     if [[ -f "$x" ]]; then
       init_file="$x"
       break;
@@ -60,22 +61,23 @@ else
     exit 1
 fi
 
+
 $EMACS_PATH -Q --batch --eval '(progn (princ emacs-version) (terpri))' | {
   read -r actual
-  if [[ "$actual" == "27.1" || "$actual" == "27.2" || "$actual" == "28.1" || "$actual" == "28.2" ]]; then
+  if [[ "$actual" == "30.1" ]]; then
     echo "emacs version is correct"
   else
-    echo "emacs version is not correct, found '$actual', expected 27.1, 27.2, 28.1, or 28.2"
+    echo "emacs version is not correct, found '$actual', expected version '30.1'"
     exit 1
   fi
 }
 
 $EMACS_PATH -l "$emacs_init" --batch --eval '(progn (princ doom-version) (terpri))' | {
   read -r actual;
-  if [[ "$actual" == "21.12.0-alpha" || "$actual" == "3.0.0-dev" || "$actual" == "3.0.0-pre" ]]; then
+  if [[ "$actual" == "3.0.0-dev" || "$actual" == "3.0.0-pre" ]]; then
     echo "doom version is correct"
   else
-    echo "doom version is not correct, found '$actual', expected 21.12.0-alpha, 3.0.0-dev, or 3.0.0-pre"
+    echo "doom version is not correct, found '$actual', expected 3.0.0-dev, or 3.0.0-pre"
     exit 1
   fi
 }

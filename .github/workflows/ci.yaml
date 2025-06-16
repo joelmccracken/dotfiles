@@ -50,7 +50,7 @@ jobs:
           env
           bash test/ci.sh
           # TODO fix ci_tests for this new setup
-          # bash test/ci_test.sh
+          bash test/ci_test.sh
 
   # test-dbg:
   #   strategy:
