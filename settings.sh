@@ -23,11 +23,13 @@
 
 # workstation_names is a regular variable, though it is used
 # for configuration. ws uses expected
-workstation_names=(aeglos belthronding angrist);
+workstation_names=(aeglos belthronding angrist ci_macos ci_linux);
 
-workstation_descriptions_aeglos="parimary laptop"
+workstation_descriptions_aeglos="primary laptop"
 workstation_descriptions_belthronding="cloud VM"
 workstation_descriptions_angrist="work computer"
+workstation_descriptions_ci_macos="profile for macos ci"
+workstation_descriptions_ci_linux="profile for linux ci"
 
 # at times it is necessary to specify settings differently on different workstations.
 # the following can be used to load those workstation-specific settings if such is needed.

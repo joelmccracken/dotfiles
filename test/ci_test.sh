@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# test.sh
+# At this point in time, this test actually checks very little, but what it DOES check
+# is things that indicate that everything went right. Specifically, checking the doom version means
+# emacs, doom, and the whole doom setup process worked out.
+
+# I plan to move this to a Haskell project at some point, probably do it with hspec instead.
+# Or maybe that bats testing library. We'll see.
+
+# [[file:../workstation.org::*test.sh][test.sh:1]]
+set -euo pipefail
+
+set +u
+# evaluating this with set -u will cause an unbound variable error
+source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh
+set -u
+
+$HOME/.local/share/ws/ws
+
+find_emacs_init() {
+  init_file="";
+  EMACS_DIR="$HOME/.config/emacs"
+  for x in "$EMACS_DIR/early-init.el" "$EMACS_DIR/init.el"; do
+    if [[ -f "$x" ]]; then
+      init_file="$x"
+      break;
+    fi;
+  done;
+  if [[ "$init_file" = "" ]]; then
+    echo "Error: Could not find emacs init file" 1>&2
+    exit 43
+  else
+    echo "$init_file"
+  fi
+}
+
+emacs_init="$(find_emacs_init)"
+
+assert_input() {
+  local label=$1
+  local expected=$2
+  local actual
+  read -r actual
+
+  if [[ "$expected" == "$actual" ]]; then
+    echo "$label is correct"
+  else
+    echo "$label is not correct, found '$actual', expected '$expected'"
+    exit 1
+  fi
+}
+
+echo "RUNNING TESTS"
+
+EMACS_PATH=$HOME/.nix-profile/bin/emacs
+# emacs
+if [ -x "$EMACS_PATH" ]; then
+    echo found emacs
+else
+    echo EMACS NOT FOUND
+    exit 1
+fi
+
+
+$EMACS_PATH -Q --batch --eval '(progn (princ emacs-version) (terpri))' | {
+  read -r actual
+  if [[ "$actual" == "30.1" ]]; then
+    echo "emacs version is correct"
+  else
+    echo "emacs version is not correct, found '$actual', expected version '30.1'"
+    exit 1
+  fi
+}
+
+$EMACS_PATH -l "$emacs_init" --batch --eval '(progn (princ doom-version) (terpri))' | {
+  read -r actual;
+  if [[ "$actual" == "3.0.0-dev" || "$actual" == "3.0.0-pre" ]]; then
+    echo "doom version is correct"
+  else
+    echo "doom version is not correct, found '$actual', expected 3.0.0-dev, or 3.0.0-pre"
+    exit 1
+  fi
+}
+
+if $EMACS_PATH -l "$emacs_init" --batch --eval "(progn (require 'vterm-module nil t))"; then
+  echo "emacs is able to load vterm-module, so vterm-module is compiled and ready to go";
+else
+  echo "error: emacs was not able to load vterm-module";
+  exit 1
+fi
+
+if [ -f $HOME/secrets/test_secret ]; then
+    echo "test secret file sucessfully synced"
+    cat $HOME/secrets/test_secret
+else
+    echo "error: test secret file was missing"
+fi
+
+echo "TESTS COMPLETE"
+# test.sh:1 ends here

@@ -1,6 +1,5 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-set -x
 bash <(curl -L "https://raw.githubusercontent.com/joelmccracken/ws/${WS_VERSION}/ws_install.sh")
 
 if [ "$RUNNER_OS" == "macOS" ]; then
