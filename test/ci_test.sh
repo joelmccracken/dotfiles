@@ -8,7 +8,7 @@
 # Or maybe that bats testing library. We'll see.
 
 # [[file:../workstation.org::*test.sh][test.sh:1]]
-set -euox pipefail
+set -euo pipefail
 
 set +u
 # evaluating this with set -u will cause an unbound variable error
