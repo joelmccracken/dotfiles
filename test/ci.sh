@@ -13,7 +13,7 @@ env
 
 echo $RANDOM
 
-$HOME/.local/share/ws/ws -v bootstrap -n "$CI_WS_NAME" \
+$HOME/.local/share/ws/ws bootstrap -n "$CI_WS_NAME" \
     --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' \
     --initial-config-repo-ref "$DOTFILES_SHA" # || {
 
