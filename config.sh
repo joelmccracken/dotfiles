@@ -7,6 +7,7 @@ workstation_props_angrist+=(ws_prop_nix_global_config)
 workstation_props_angrist+=(ws_prop_df_dotfiles)
 workstation_props_angrist+=(ws_prop_nix_home_manager)
 workstation_props_angrist+=(ws_prop_homebrew_bundle)
+workstation_props_angrist+=(ws_prop_linux_bw_cli_installed)
 workstation_props_angrist+=(ws_prop_bitwarden_secrets) # needs brew bundle
 
 workstation_props_dotfiles_angrist() {
@@ -49,4 +50,37 @@ workstation_props_dotfiles_ci_macos() {
 
 workstation_props_dotfiles_ci_ubuntu() {
   workstation_props_dotfiles_angrist
+}
+
+ws_prop_linux_bw_cli_installed()
+{
+  if [[ "$(uname)" == 'Linux' ]]; then
+    if which bw &>/dev/null; then
+      echo "found bw command";
+      return 0
+    else
+      echo "did not find bw command"
+      return 1
+    fi
+  else
+    # only care
+    return 0
+  fi
+}
+
+ws_prop_linux_bw_cli_installed_fix()
+{
+
+  apt update -y
+  apt install -y wget unzip
+
+  local dldir
+  dldir="$(mktemp -d)"
+  ( cd "$dldir";
+    wget -O bw.zip 'https://bitwarden.com/download/?app=cli&platform=linux'
+    unzip bw.zip
+    mkdir -p "$HOME/.local/bin"
+    install ./bw "$HOME/.local/bin/bw"
+  )
+  return 0
 }
