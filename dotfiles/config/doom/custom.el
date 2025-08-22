@@ -8,7 +8,8 @@
  '(ignored-local-variable-values '((checkdoc-allow-quoting-nil-and-t . t)))
  '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(safe-local-variable-values
-   '((eval add-hook 'before-save-hook
+   '((ftf-project-finders ftf-get-top-git-dir) (js-indent-level . 2)
+     (eval add-hook 'before-save-hook
       (lambda nil
         (if (fboundp 'org-make-toc) (org-make-toc)
           (message-box "Please install org-make-toc.")))

@@ -1,7 +1,8 @@
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "W", function()
-  hs.alert.show("Hello World!")
+hs.hotkey.bind({"cmd", "ctrl"}, "H", hs.toggleConsole)
+hs.hotkey.bind({"cmd", "ctrl"}, "E", function()
+   -- hs.alert.show("Hello World!")
+   hs.execute("open -n ~/Applications/Home\\ Manager\\ Apps/Emacs.app")
 end)
-
 
 -- following is copied/adapted from
 -- https://github.com/colindean/hejmo/blob/master/dotfiles/hammerspoon/window_mgmt.lua
