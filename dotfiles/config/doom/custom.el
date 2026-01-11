@@ -5,10 +5,21 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    '("b5fd9c7429d52190235f2383e47d340d7ff769f141cd8f9e7a4629a81abc6b19" default))
- '(ignored-local-variable-values '((checkdoc-allow-quoting-nil-and-t . t)))
  '(magit-todos-insert-after '(bottom) nil nil "Changed by setter of obsolete option `magit-todos-insert-at'")
  '(safe-local-variable-values
-   '((ftf-project-finders ftf-get-top-git-dir) (js-indent-level . 2)
+   '((eval progn (org-babel-goto-named-src-block "org-support")
+      (org-babel-execute-src-block t))
+     (eval progn (org-babel-goto-named-src-block "org-support" t)
+      (org-babel-execute-src-block))
+     (eval progn (org-babel-goto-named-src-block "org-support")
+      (org-babel-execute-src-block))
+     (eval progn (org-babel-goto-named-source-block "org-support")
+      (org-babel-execute-src-block))
+     (eval progn (org-babel-goto-source-block "org-support")
+      (org-babel-execute-src-block))
+     (eval progn (org-babel-goto-source-block "org-support")
+      (org-babel-execute-src-block &optional ARG INFO PARAMS EXECUTOR-TYPE))
+     (ftf-project-finders ftf-get-top-git-dir) (js-indent-level . 2)
      (eval add-hook 'before-save-hook
       (lambda nil
         (if (fboundp 'org-make-toc) (org-make-toc)

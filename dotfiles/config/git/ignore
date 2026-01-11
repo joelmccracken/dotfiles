@@ -1,2 +1,4 @@
 # Globally ignore these, superannoying
 .DS_Store
+
+**/.claude/settings.local.json
