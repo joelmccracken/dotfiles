@@ -189,20 +189,11 @@ Exercism/
 Justinmind/
 lib/emacs/org-wiki/
 .zsh_history
-sesco/
 .kube/
 .ngrok2/
 sesco/
 
-.config/PixelPiracy/
-.config/StardewValley/
-.config/configstore/
-.config/gtk-2.0/
-.config/hub
-.config/inkscape/
-.config/stripe/
 .rush/
-
 
 # links to where the installed nix files are, but dont need
 # to revision them
