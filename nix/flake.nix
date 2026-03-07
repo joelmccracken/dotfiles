@@ -93,12 +93,17 @@
       machineDefs = machines: builtins.foldl' mergeDefs {} machines;
     in
       machineDefs [
+
         (macConfig {
           user = "joel.mccracken"; ws-name = "angrist"; system = "aarch64-darwin"; home = "/Users/joel.mccraken";
         })
 
         (macConfig {
           user = "joelmccracken"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
+        })
+
+        (macConfig {
+          user = "joelmccracken"; ws-name = "glamdring"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
         })
 
         (linuxConfig {
