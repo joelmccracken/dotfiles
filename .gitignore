@@ -230,3 +230,5 @@ workstation/
 
 # zsh autocompletion cache file, automatically created if missing
 .zcompdump
+
+.git-dir
