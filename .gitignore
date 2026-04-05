@@ -1,3 +1,6 @@
+# git dir for wshs git home prop
+.git-dir/
+
 # history files
 .bash_history
 .cljsc_history
@@ -231,4 +234,53 @@ workstation/
 # zsh autocompletion cache file, automatically created if missing
 .zcompdump
 
-.git-dir
+.bun/
+.chezscheme_history
+.claude.json
+.claude/
+.config/emacs
+.cursor/
+.elan/
+My Games/
+.lima/
+
+
+
+# .bashrc
+# .config/doom
+# .ghci
+# .ghcup/
+# .git-dotfiles/
+# .gitconfig
+# .hammerspoon
+# .nix-channels
+# .nixpkgs/
+# .npmrc
+# .org-timestamps/
+# .qlot/
+# .reddup.yml
+# .sqlite_history
+# .zshrc
+# .zshrc.aeglos.sh
+# Virtual Machines.localized/
+# bitbar
+# macos14install.dmg
+# vendor/
+# vmwareshared/
+
+
+
+.config/cabal/
+.config/containers/
+.config/ghc/
+.config/lem/
+.config/wshs/
+.ghcup/
+.nixpkgs/
+.org-timestamps/
+.qlot/
+.sqlite_history
+Virtual Machines.localized/
+vendor/
+vmwareshared/
+
