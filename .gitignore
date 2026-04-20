@@ -274,7 +274,7 @@ My Games/
 .config/containers/
 .config/ghc/
 .config/lem/
-.config/wshs/
+# .config/wshs/
 .ghcup/
 .nixpkgs/
 .org-timestamps/

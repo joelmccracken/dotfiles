@@ -1,0 +1,31 @@
+configDir: "~/.config/wshs"
+configRepoUrl: "https://github.com/joelmccracken/dotfiles"
+configRepoOrigin: "git@github.com:joelmccracken/dotfiles.git"
+configRepoBranch: "master"
+workstations:
+  - workstationName: "aeglos"
+properties:
+  - type: GitHomeDir
+    params:
+      gitDir: .git-dir
+      remoteUrl: "git@github.com:joelmccracken/dotfiles.git"
+      branch: wshs-new-technique
+      # homeDir: "~/temp_home"
+  - type: NixDaemon
+    params:
+      interactive: False
+      nixConf: |
+        trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+        substituters = https://cache.nixos.org https://cache.iog.io
+        experimental-features = nix-command flakes
+        trusted-users = root joelmccracken runner
+        build-users-group = nixbld
+  - type: HomeManager
+    params:
+      dir: "~/.config/wshs/nix"
+  - type: HomebrewBundle
+    params:
+      brewfile: "~/.config/wshs/Brewfile"
+  - type: BitwardenSecrets
+    params:
+      syncIntervalDays: 7
