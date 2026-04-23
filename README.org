@@ -1,24 +1,11 @@
 #+title: Readme
 
 
-new home for my dotfiles/config working with ws tool
+new home for my dotfiles/config working with wshs tool
 
 
 
 * usage/setup
-
-set bitwarden creds for secrets setup, so secrets can be synchronized
-#+begin_src sh
-export WS_BW_EMAIL='...'
-export WS_BW_MASTER_PASS='...'
-#+end_src
-
-run the initial install script, sets up ws tool
-#+begin_src sh
-bash <(curl "https://raw.githubusercontent.com/joelmccracken/ws/master/ws_install.sh")        ~
-#+end_src
-
-execute the bootstrap script
-#+begin_src sh
-~/.local/share/ws/ws bootstrap -n aeglos --initial-config-repo 'https://github.com/joelmccracken/dotfiles.git' --initial-config-repo-ref 'refs/heads/jnm/add-test-script'
-#+end_src
+- TODO fill this in
+* after setup:
+- currently emacs requires ~doom sync~  to be run independently
