@@ -284,3 +284,4 @@ Virtual Machines.localized/
 vendor/
 vmwareshared/
 
+.terraform.d/
