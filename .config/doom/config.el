@@ -52,7 +52,7 @@
   (setq +org-capture-notes-file "inbox.org"))
 
 (let* ((ws-name (getenv "WS_NAME"))
-       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/workstation/")
+       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/wshs/")
                        "/hosts/"
                        ws-name
                        "/config.el")))

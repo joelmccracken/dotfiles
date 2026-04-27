@@ -8,9 +8,9 @@ sourceIfExists () {
     fi
 }
 
-sourceIfExists "$HOME/.config/workstation/settings.current.sh"
+# sourceIfExists "$HOME/.config/workstation/settings.current.sh"
 
-export WS_CONFIG="${WS_CONFIG:-$HOME/.config/workstation}"
+export WS_CONFIG="${WS_CONFIG:-$HOME/.config/wshs}"
 
 sourceIfExists ${WS_CONFIG}/lib/shell/settings.sh
 sourceIfExists ${WS_CONFIG}/lib/shell/paths.sh
@@ -50,6 +50,3 @@ sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh
 # sourceIfExists ~/workstation/lib/shell/funcs.sh
 sourceIfExists ~/.ghcup/env
-
-# TODO handle this in some other, better way
-# sourceIfExists "$HOME/freckle/jnm/lib/freckle.bash"

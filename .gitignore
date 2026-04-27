@@ -274,6 +274,7 @@ My Games/
 .config/containers/
 .config/ghc/
 .config/lem/
+.config/workstation-bak/
 # .config/wshs/
 .ghcup/
 .nixpkgs/
