@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 
+export PATH="/usr/sbin:$PATH"
 export PATH="$HOME/.cabal/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 export PATH="$HOME/.emacs.d/bin:$PATH"
@@ -21,7 +22,6 @@ export PATH="/usr/local/texlive/2025/bin/universal-darwin:$PATH"
 export PATH="$HOME/.qlot/bin:$PATH"
 
 export PATH="$HOME/.ghcup/bin:$PATH"
-
 export PATH="$HOME/.bun/bin:$PATH"
 
 export MANPATH="/usr/local/texlive/2025/texmf-dist/doc/man:$MANPATH"

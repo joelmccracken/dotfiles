@@ -51,11 +51,13 @@
                 (list "actions.org" "projects.org")))
   (setq +org-capture-notes-file "inbox.org"))
 
-(let* ((ws-name (getenv "WS_NAME"))
-       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/wshs/")
+(let* ((ws-name "aeglos";; (getenv "WS_NAME") temporary hack, fix
+                )
+       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/wshs")
                        "/hosts/"
                        ws-name
                        "/config.el")))
+  (message "ws-cfg: %s" ws-cfg)
   (when (and ws-name (file-exists-p ws-cfg))
     (load ws-cfg)))
 
