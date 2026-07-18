@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+
+export PATH="/usr/sbin:$PATH"
+export PATH="$HOME/.cabal/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.emacs.d/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+export PATH="$HOME/workstation/bin:$PATH"
+export PATH="/usr/local/bin:$PATH"
+export PATH="$HOME/.rbenv/shims:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="/usr/local/opt/libpq/bin:$PATH"
+export PATH="/usr/local/sbin:$PATH"
+export PATH="/usr/local/opt/libpq/bin:$PATH"
+export PATH="/run/current-system/sw/bin:$PATH"
+export PATH="/usr/local/opt/mysql-client/bin:$PATH"
+export PATH="/opt/homebrew/bin:$PATH"
+export PATH="$HOME/.local/share/ws:$PATH"
+export PATH="$HOME/.local/share/go/bin:$PATH"
+export PATH="/usr/local/texlive/2025/bin/universal-darwin:$PATH"
+export PATH="$HOME/.qlot/bin:$PATH"
+
+export PATH="$HOME/.ghcup/bin:$PATH"
+export PATH="$HOME/.bun/bin:$PATH"
+
+export MANPATH="/usr/local/texlive/2025/texmf-dist/doc/man:$MANPATH"
+
+export INFOPATH="/usr/local/texlive/2025/texmf-dist/doc/info:$INFOPATH"
