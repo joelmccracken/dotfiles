@@ -10,7 +10,7 @@ sourceIfExists () {
 
 # sourceIfExists "$HOME/.config/workstation/settings.current.sh"
 
-export WS_CONFIG="${WS_CONFIG:-$HOME/.config/wshs}"
+export WS_CONFIG="${WS_CONFIG:-$HOME/.config/funstation}"
 
 sourceIfExists ${WS_CONFIG}/lib/shell/settings.sh
 sourceIfExists ${WS_CONFIG}/lib/shell/paths.sh

@@ -53,7 +53,7 @@
 
 (let* ((ws-name "aeglos";; (getenv "WS_NAME") temporary hack, fix
                 )
-       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/wshs")
+       (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/funstation")
                        "/hosts/"
                        ws-name
                        "/config.el")))
