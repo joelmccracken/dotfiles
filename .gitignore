@@ -220,7 +220,6 @@ bin/haskell-language-server-macOS-8.8.4
 .config/nixpkgs/
 .pyenv/
 .zsh_sessions/
-wshs/result
 
 
 .config/pip/
@@ -275,7 +274,7 @@ My Games/
 .config/ghc/
 .config/lem/
 .config/workstation-bak/
-# .config/wshs/
+
 .ghcup/
 .nixpkgs/
 .org-timestamps/

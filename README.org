@@ -1,11 +1,11 @@
 #+title: Readme
 
 
-new home for my dotfiles/config working with wshs tool
+new home for my dotfiles/config working with funstaion tool
 
 
 
 * usage/setup
 - TODO fill this in
 * after setup:
-- currently emacs requires ~doom sync~  to be run independently
+- currently emacs requires ~doom sync~ to be run independently

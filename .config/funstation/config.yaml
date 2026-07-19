@@ -18,10 +18,10 @@ properties:
         build-users-group = nixbld
   - type: HomeManager
     params:
-      dir: "~/.config/wshs/nix"
+      dir: "~/.config/funstation/nix"
   - type: HomebrewBundle
     params:
-      brewfile: "~/.config/wshs/Brewfile"
+      brewfile: "~/.config/funstation/Brewfile"
   - type: BitwardenSecrets
     params:
       syncIntervalDays: 7
