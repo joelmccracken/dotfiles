@@ -1,5 +1,7 @@
 workstations:
-  - workstationName: "aeglos"
+  - name: "glamdring"    # personal
+  - name: "aeglos"       # work
+  - name: "belthronding" # cloud
 properties:
   - type: GitHomeDir
     params:
@@ -23,5 +25,6 @@ properties:
     params:
       brewfile: "~/.config/funstation/Brewfile"
   - type: BitwardenSecrets
+    # need to set up ssh config after initial bootstrap
     params:
       syncIntervalDays: 7
