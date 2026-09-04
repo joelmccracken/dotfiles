@@ -14,7 +14,9 @@ export CPPFLAGS="-I/usr/local/opt/libpq/include"
 
 
 export C_INCLUDE_PATH
-C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include/ffi:$C_INCLUDE_PATH"
+if command -v xcrun 2>&1 > /dev/null; then 
+    C_INCLUDE_PATH="$(xcrun --show-sdk-path)/usr/include/ffi:$C_INCLUDE_PATH"
+fi 
 C_INCLUDE_PATH="/opt/homebrew/Cellar/pcre/8.45/include:$C_INCLUDE_PATH"
 # C_INCLUDE_PATH="/opt/homebrew/Cellar/librdkafka/2.8.0/include:$C_INCLUDE_PATH"
 
