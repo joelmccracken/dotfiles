@@ -1,11 +1,19 @@
 #+title: Readme
 
 
-new home for my dotfiles/config working with funstaion tool
+new home for my dotfiles/config working with funstation tool
 
 
 
 * usage/setup
-- TODO fill this in
+- download the file at $REPO_ROOT/.config/funstation/config.yaml, put it at that
+  location in $HOME.
+- in ~$HOME/secrets~ create two files:
+  - ~bw_email~, which should just contain the raw bitwarden secrets email
+  - ~bw_master_pass~, which should contain the master password
+  - be sure to change the permissions on these files.
+- download ~funstation~ executable for current system.
+- run ~fun --workstation $WORKSTATION_NAME bootstrap~
 * after setup:
 - currently emacs requires ~doom sync~ to be run independently
+- ssh config file needs to be set up

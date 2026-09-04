@@ -8,6 +8,7 @@ properties:
       gitDir: .git-dir
       remoteUrl: "git@github.com:joelmccracken/dotfiles.git"
       branch: master
+
       # TODO create the runAfterChange script to update
       # from public to private remote url
   - type: NixDaemon
