@@ -8,7 +8,8 @@ properties:
       gitDir: .git-dir
       remoteUrl: "git@github.com:joelmccracken/dotfiles.git"
       branch: master
-      # homeDir: "~/temp_home"
+      # TODO create the runAfterChange script to update
+      # from public to private remote url
   - type: NixDaemon
     params:
       interactive: False
@@ -25,6 +26,6 @@ properties:
     params:
       brewfile: "~/.config/funstation/Brewfile"
   - type: BitwardenSecrets
-    # need to set up ssh config after initial bootstrap
+    # Note: need to manually set up ssh config after initial bootstrap
     params:
       syncIntervalDays: 7
