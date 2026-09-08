@@ -1,0 +1,9 @@
+#+title: Nix and HomeManager Readme
+
+To run manually e.g, with corrected user and workstation name:
+
+#+begin_src sh
+cd nix && nix -v -L --show-trace run '.#homeConfigurations."joel@aeglos".activationPackage'
+#+end_src
+
+or run as part of funstation tool.

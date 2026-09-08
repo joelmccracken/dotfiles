@@ -5,6 +5,9 @@
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
     nixpkgs-linux.url = "github:nixos/nixpkgs/nixos-24.11";
+    # Newer nixpkgs used only for select packages (e.g. bitwarden-cli, which
+    # needs a newer version to log in). Do NOT pull other packages from here.
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager-darwin = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -19,7 +22,7 @@
     };
   };
 
-  outputs = { nixpkgs-linux, nixpkgs-darwin, home-manager-linux, home-manager-darwin, nix-doom-emacs-unstraightened, ... }:
+  outputs = { nixpkgs-linux, nixpkgs-darwin, nixpkgs-unstable, home-manager-linux, home-manager-darwin, nix-doom-emacs-unstraightened, ... }:
     let
       home-config = settings@{nixpkgs, system, home, user, home-manager, ...}:
         let
@@ -29,6 +32,7 @@
             config.allowUnfreePredicate = pkg:
               builtins.elem (nixpkgs.lib.getName pkg) [ "symbola" ];
           };
+          pkgs-unstable = import nixpkgs-unstable { inherit system; };
           home-config-mod =
               { config, pkgs, ... }:
                 {
@@ -46,9 +50,6 @@
                     pkgs.fd
                     pkgs.go
                     pkgs.ispell
-                    # it is broken because of course it is
-                    # everything about nix is an lie
-                    # pkgs.bitwarden-cli
                     pkgs.direnv
                     pkgs.mr  # myrepos https://myrepos.branchable.com/install/
                     pkgs.graphviz
@@ -56,6 +57,8 @@
                     pkgs.coreutils
                     pkgs.wget
                     pkgs.racket
+                  ] ++ nixpkgs.lib.optionals pkgs.stdenv.isLinux [
+                    pkgs-unstable.bitwarden-cli
                   ];
 
                   home.file = {};

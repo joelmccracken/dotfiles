@@ -321,3 +321,12 @@ vmwareshared/
 .xsession-errors
 .xsession-errors.old
 .zoom/
+
+.config/environment.d/
+.config/fontconfig/
+.config/systemd/
+
+.config/Bitwarden CLI/
+
+# obsidian/work
+obsidian/
