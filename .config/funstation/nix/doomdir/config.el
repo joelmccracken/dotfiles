@@ -51,6 +51,13 @@
                 (list "actions.org" "projects.org")))
   (setq +org-capture-notes-file "inbox.org"))
 
+
+(use-package! daml-mode
+  :mode "\\.daml\\'"
+  :commands (daml-mode))
+
+
+
 (let* ((ws-name "aeglos";; (getenv "WS_NAME") temporary hack, fix
                 )
        (ws-cfg (concat (or (getenv "WS_CONFIG") "~/.config/funstation")
@@ -244,3 +251,4 @@
                 (require 'ef)))
         (jnm/in-ef-dir . t)
         (ef/files "actions.org" "projects-maintenance.org" "projects.org" "upcoming.org" "waiting.org")))
+

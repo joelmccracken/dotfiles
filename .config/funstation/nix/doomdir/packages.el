@@ -56,3 +56,5 @@
 ;; (package! xhair)
 
 (package! denote)
+
+(package! dotenv-mode)
