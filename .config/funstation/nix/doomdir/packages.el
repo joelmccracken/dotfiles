@@ -58,3 +58,5 @@
 (package! denote)
 
 (package! dotenv-mode)
+
+(package! daml-mode)
