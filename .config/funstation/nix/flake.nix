@@ -32,7 +32,11 @@
             config.allowUnfreePredicate = pkg:
               builtins.elem (nixpkgs.lib.getName pkg) [ "symbola" ];
           };
-          pkgs-unstable = import nixpkgs-unstable { inherit system; };
+          pkgs-unstable = import nixpkgs-unstable {
+            inherit system;
+            config.allowUnfreePredicate = pkg:
+              builtins.elem (nixpkgs-unstable.lib.getName pkg) [ "claude-code" ];
+          };
           home-config-mod =
               { config, pkgs, ... }:
                 {
@@ -57,6 +61,8 @@
                     pkgs.coreutils
                     pkgs.wget
                     pkgs.racket
+                    # Pulled from unstable to track a recent release of the CLI.
+                    pkgs-unstable.claude-code
                   ] ++ nixpkgs.lib.optionals pkgs.stdenv.isLinux [
                     pkgs-unstable.bitwarden-cli
                   ];
