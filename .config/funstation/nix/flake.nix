@@ -13,13 +13,22 @@
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs-linux";
     };
+    nix-doom-emacs-unstraightened = {
+      url = "github:marienz/nix-doom-emacs-unstraightened";
+      inputs.nixpkgs.follows = "nixpkgs-linux";
+    };
   };
 
-  outputs = { nixpkgs-linux, nixpkgs-darwin, home-manager-linux, home-manager-darwin, ... }:
+  outputs = { nixpkgs-linux, nixpkgs-darwin, home-manager-linux, home-manager-darwin, nix-doom-emacs-unstraightened, ... }:
     let
       home-config = settings@{nixpkgs, system, home, user, home-manager, ...}:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ nix-doom-emacs-unstraightened.overlays.default ];
+            config.allowUnfreePredicate = pkg:
+              builtins.elem (nixpkgs.lib.getName pkg) [ "symbola" ];
+          };
           home-config-mod =
               { config, pkgs, ... }:
                 {
@@ -55,12 +64,6 @@
                     "~/.nix-profile/bin/"
                   ];
 
-                  programs.emacs = {
-                    enable = true;
-                    extraPackages = epkgs: [ epkgs.vterm ];
-                    package = (pkgs.emacs.override {withNativeCompilation = false; });
-                  };
-
                   home.sessionVariables = {};
 
                   programs.home-manager.enable = true;
@@ -68,7 +71,8 @@
         in
           home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
-            modules = [home-config-mod];
+            modules = [ home-config-mod ./emacs.nix ];
+            extraSpecialArgs = { inherit nix-doom-emacs-unstraightened; };
           };
 
       macConfig = settings:
@@ -98,8 +102,8 @@
           user = "joel.mccracken"; ws-name = "angrist"; system = "aarch64-darwin"; home = "/Users/joel.mccraken";
         })
 
-        (macConfig {
-          user = "joelmccracken"; ws-name = "aeglos"; system = "x86_64-darwin"; home = "/Users/joelmccracken";
+        (linuxConfig {
+          user = "joel"; ws-name = "aeglos"; system = "x86_64-linux"; home = "/home/joel";
         })
 
         (macConfig {
