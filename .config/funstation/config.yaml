@@ -1,32 +1,35 @@
 workstations:
   - name: "glamdring"    # personal
+    use: [nix-daemon, git-home-dir, brew-bundle, home-manager]
   - name: "aeglos"       # work
-  - name: "belthronding" # cloud
+    use: [ git-home-dir, home-manager, bitwarden-secrets ]
 properties:
-  - type: GitHomeDir
+  - name: git-home-dir
+    type: GitHomeDir
     params:
       gitDir: .git-dir
       remoteUrl: "git@github.com:joelmccracken/dotfiles.git"
       branch: master
-
-      # TODO create the runAfterChange script to update
-      # from public to private remote url
-  - type: NixDaemon
+  - name: nix-daemon
+    type: NixDaemon
     params:
       interactive: False
       nixConf: |
         trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
         substituters = https://cache.nixos.org https://cache.iog.io
         experimental-features = nix-command flakes
-        trusted-users = root joelmccracken runner
+        trusted-users = root joelmccracken joel runner
         build-users-group = nixbld
-  - type: HomeManager
+  - name: home-manager
+    type: HomeManager
     params:
       dir: "~/.config/funstation/nix"
-  - type: HomebrewBundle
+  - name: brew-bundle
+    type: HomebrewBundle
     params:
       brewfile: "~/.config/funstation/Brewfile"
-  - type: BitwardenSecrets
+  - name: bitwarden-secrets
+    type: BitwardenSecrets
     # Note: need to manually set up ssh config after initial bootstrap
     params:
       syncIntervalDays: 7
