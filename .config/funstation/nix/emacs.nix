@@ -84,6 +84,7 @@ in
     bash-language-server
     nil
     yaml-language-server
+    typescript-language-server
 
     (nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; }) # modeline
     symbola # fallback

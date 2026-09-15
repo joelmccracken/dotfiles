@@ -1,8 +1,9 @@
 workstations:
   - name: "glamdring"    # personal
-    use: [nix-daemon, git-home-dir, brew-bundle, home-manager]
+    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager ]
   - name: "aeglos"       # work
-    use: [ git-home-dir, home-manager, bitwarden-secrets ]
+    use: [ git-home-dir, home-manager, bitwarden-secrets
+    ]
 properties:
   - name: git-home-dir
     type: GitHomeDir
