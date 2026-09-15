@@ -3,7 +3,7 @@
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
-    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-24.11-darwin";
+    nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     nixpkgs-linux.url = "github:nixos/nixpkgs/nixos-24.11";
     # Newer nixpkgs used only for select packages (e.g. bitwarden-cli, which
     # needs a newer version to log in). Do NOT pull other packages from here.
@@ -12,7 +12,7 @@
     # release supporting it. Used in place of unstable on Intel macs.
     nixpkgs-2605-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     home-manager-darwin = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     home-manager-linux = {
@@ -39,11 +39,18 @@
           # source before importing.
           nixpkgs-newer =
             if system == "x86_64-darwin" then nixpkgs-2605-darwin else nixpkgs-unstable;
-          pkgs-unstable = import nixpkgs-newer {
+          pkgs-newer= import nixpkgs-newer {
             inherit system;
             config.allowUnfreePredicate = pkg:
               builtins.elem (nixpkgs-newer.lib.getName pkg) [ "claude-code" ];
           };
+          # On darwin, node-gyp (for native npm modules built from source) runs
+          # `xcodebuild -version`, but the nixpkgs package only provides xcrun.
+          # bitwarden now needs a newer version to log in (for recent 2fa requirements)
+          bitwarden-cli = pkgs-newer.bitwarden-cli.overrideAttrs (old: {
+            nativeBuildInputs = old.nativeBuildInputs
+              ++ nixpkgs.lib.optionals pkgs-newer.stdenv.isDarwin [ pkgs-newer.xcbuild ];
+          });
           home-config-mod =
               { config, pkgs, ... }:
                 {
@@ -70,9 +77,8 @@
                     pkgs.racket
                     # Pulled from unstable (26.05 on x86_64-darwin) to track a
                     # recent release of the CLI.
-                    pkgs-unstable.claude-code
-                  ] ++ nixpkgs.lib.optionals pkgs.stdenv.isLinux [
-                    pkgs-unstable.bitwarden-cli
+                    pkgs-newer.claude-code
+                    bitwarden-cli
                   ];
 
                   home.file = {};

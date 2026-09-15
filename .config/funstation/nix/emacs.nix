@@ -86,7 +86,11 @@ in
     yaml-language-server
     typescript-language-server
 
-    (nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; }) # modeline
+    # modeline; nerdfonts was split into nerd-fonts.* in 25.05. Remove the
+    # fallback once all machines are on >= 25.05.
+    (if pkgs ? nerd-fonts
+     then nerd-fonts.symbols-only
+     else nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; })
     symbola # fallback
   ]);
 
