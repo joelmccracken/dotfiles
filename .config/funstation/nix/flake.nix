@@ -8,6 +8,9 @@
     # Newer nixpkgs used only for select packages (e.g. bitwarden-cli, which
     # needs a newer version to log in). Do NOT pull other packages from here.
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    # nixpkgs 26.11 (and so unstable) dropped x86_64-darwin; 26.05 is the last
+    # release supporting it. Used in place of unstable on Intel macs.
+    nixpkgs-2605-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
     home-manager-darwin = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs-darwin";
@@ -22,7 +25,7 @@
     };
   };
 
-  outputs = { nixpkgs-linux, nixpkgs-darwin, nixpkgs-unstable, home-manager-linux, home-manager-darwin, nix-doom-emacs-unstraightened, ... }:
+  outputs = { nixpkgs-linux, nixpkgs-darwin, nixpkgs-unstable, nixpkgs-2605-darwin, home-manager-linux, home-manager-darwin, nix-doom-emacs-unstraightened, ... }:
     let
       home-config = settings@{nixpkgs, system, home, user, home-manager, ...}:
         let
@@ -32,10 +35,14 @@
             config.allowUnfreePredicate = pkg:
               builtins.elem (nixpkgs.lib.getName pkg) [ "symbola" ];
           };
-          pkgs-unstable = import nixpkgs-unstable {
+          # Importing unstable at all on x86_64-darwin throws, so select the
+          # source before importing.
+          nixpkgs-newer =
+            if system == "x86_64-darwin" then nixpkgs-2605-darwin else nixpkgs-unstable;
+          pkgs-unstable = import nixpkgs-newer {
             inherit system;
             config.allowUnfreePredicate = pkg:
-              builtins.elem (nixpkgs-unstable.lib.getName pkg) [ "claude-code" ];
+              builtins.elem (nixpkgs-newer.lib.getName pkg) [ "claude-code" ];
           };
           home-config-mod =
               { config, pkgs, ... }:
@@ -61,7 +68,8 @@
                     pkgs.coreutils
                     pkgs.wget
                     pkgs.racket
-                    # Pulled from unstable to track a recent release of the CLI.
+                    # Pulled from unstable (26.05 on x86_64-darwin) to track a
+                    # recent release of the CLI.
                     pkgs-unstable.claude-code
                   ] ++ nixpkgs.lib.optionals pkgs.stdenv.isLinux [
                     pkgs-unstable.bitwarden-cli

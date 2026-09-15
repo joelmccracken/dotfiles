@@ -139,6 +139,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-2605-darwin": {
+      "locked": {
+        "lastModified": 1789155820,
+        "narHash": "sha256-cTHZTeYRV42p62ss3ZEFnBXrW3WpLgDpYWYyat4V2b8=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "8029b6c369415ee1ef02a86f352806348f104db9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixpkgs-26.05-darwin",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-darwin": {
       "locked": {
         "lastModified": 1751290243,
@@ -192,6 +208,7 @@
         "home-manager-darwin": "home-manager-darwin",
         "home-manager-linux": "home-manager-linux",
         "nix-doom-emacs-unstraightened": "nix-doom-emacs-unstraightened",
+        "nixpkgs-2605-darwin": "nixpkgs-2605-darwin",
         "nixpkgs-darwin": "nixpkgs-darwin",
         "nixpkgs-linux": "nixpkgs-linux",
         "nixpkgs-unstable": "nixpkgs-unstable"
