@@ -6,7 +6,7 @@
   ...
 }:
 let
-  doom-emacs = pkgs.doomEmacs {
+  doomArgs = {
     doomDir = ./doomdir;
     doomLocalDir = "${config.xdg.dataHome}/nix-doom-unstraightened";
     # emacsPackageOverrides = eself: esuper: { };
@@ -14,6 +14,10 @@ let
       epkgs.daml-mode
     ];
   };
+  doom-emacs = pkgs.doomEmacs doomArgs;
+  # emacs-with-doom: for macos
+  # TODO see if I can remove the linux bits, use this everywhere
+  emacs-with-doom = lib.lowPrio (pkgs.emacsWithDoom doomArgs);
   emacs-alias = pkgs.writeShellScriptBin "emacs" ''
     exec ${doom-emacs}/bin/doom-emacs "$@"
   '';
@@ -73,6 +77,8 @@ in
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     doom-emacs-launcher
     doom-emacs-desktop
+  ] ++ lib.optionals pkgs.stdenv.isDarwin [
+    emacs-with-doom
   ] ++ (with pkgs; [
     coreutils
     fd

@@ -1,19 +1,15 @@
 # -*- mode: sh; sh-shell: zsh; -*-
 
+export PATH="$HOME/.local/bin:$PATH"
+
 . "$HOME/.commonrc"
 
 setopt append_history # append rather then overwrite
 setopt extended_history # save timestamp
 setopt inc_append_history # add history
 
-# bun completions
-[ -s "/Users/joelmccracken/.bun/_bun" ] && source "/Users/joelmccracken/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
-export PATH="/usr/local/opt/openjdk/bin:$PATH"
-
 # rbenv
 eval "$(rbenv init - zsh)"
+
+# homebrew
+eval "$(/opt/homebrew/bin/brew shellenv zsh)"

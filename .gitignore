@@ -330,3 +330,6 @@ vmwareshared/
 
 # obsidian/work
 obsidian/
+
+.lmstudio-home-pointer
+.lmstudio/

@@ -122,7 +122,7 @@
       machineDefs [
 
         (macConfig {
-          user = "joel.mccracken"; ws-name = "angrist"; system = "aarch64-darwin"; home = "/Users/joel.mccraken";
+          user = "joel"; ws-name = "angrist"; system = "aarch64-darwin"; home = "/Users/joel";
         })
 
         (linuxConfig {

@@ -22,7 +22,14 @@ export PATH="$HOME/.qlot/bin:$PATH"
 
 export PATH="$HOME/.ghcup/bin:$PATH"
 export PATH="$HOME/.bun/bin:$PATH"
+export PATH="$PATH:/Users/joel/.lmstudio/bin"
+export PATH="/usr/local/opt/openjdk/bin:$PATH"
+
+export PATH="$BUN_INSTALL/bin:$PATH"
+
 
 export MANPATH="/usr/local/texlive/2025/texmf-dist/doc/man:$MANPATH"
 
 export INFOPATH="/usr/local/texlive/2025/texmf-dist/doc/info:$INFOPATH"
+
+export BUN_INSTALL="$HOME/.bun"
