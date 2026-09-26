@@ -1,13 +1,21 @@
+# Notes:
+# - first run to fetch initial home dir config
+#   ~/Downloads/funstation-aarch64-darwin --workstation first-run bootstrap -v
+# - afterwards, --workstation should be the set to correct profile
+# - other setup required:
+#   fill in files:
+#   - ~/secrets/bw_client_id
+#   - ~/secrets/bw_client_secret
+#   - ~/secrets/bw_master_pass
 workstations:
   - name: "first-run" # initial setup, run first 
     use: [ git-home-dir-first-run ]
   - name: "angrist"      # personal, aarch64
-    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager ]
+    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets]
   - name: "glamdring"    # personal, x86
-    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager ]
+    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets]
   - name: "aeglos"       # work
-    use: [ git-home-dir, home-manager, bitwarden-secrets
-    ]
+    use: [ git-home-dir, home-manager, bitwarden-secrets ]
 properties:
   - name: git-home-dir-first-run
     type: GitHomeDir
@@ -16,7 +24,6 @@ properties:
       # use https for initial clone
       remoteUrl: "https://github.com/joelmccracken/dotfiles.git"
       branch: master
-
   - name: git-home-dir
     type: GitHomeDir
     params:
@@ -43,6 +50,5 @@ properties:
       brewfile: "~/.config/funstation/Brewfile"
   - name: bitwarden-secrets
     type: BitwardenSecrets
-    # Note: need to manually set up ssh config after initial bootstrap
     params:
       syncIntervalDays: 7
