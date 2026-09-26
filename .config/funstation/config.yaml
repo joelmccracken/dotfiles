@@ -1,10 +1,22 @@
 workstations:
-  - name: "glamdring"    # personal
+  - name: "first-run" # initial setup, run first 
+    use: [ git-home-dir-first-run ]
+  - name: "angrist"      # personal, aarch64
+    use: [ nix-daemon, git-home-dir, brew-bundle, home-manager ]
+  - name: "glamdring"    # personal, x86
     use: [ nix-daemon, git-home-dir, brew-bundle, home-manager ]
   - name: "aeglos"       # work
     use: [ git-home-dir, home-manager, bitwarden-secrets
     ]
 properties:
+  - name: git-home-dir-first-run
+    type: GitHomeDir
+    params:
+      gitDir: .git-dir
+      # use https for initial clone
+      remoteUrl: "https://github.com/joelmccracken/dotfiles.git"
+      branch: master
+
   - name: git-home-dir
     type: GitHomeDir
     params:
