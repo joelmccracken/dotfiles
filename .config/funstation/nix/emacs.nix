@@ -14,28 +14,18 @@ let
       epkgs.daml-mode
     ];
   };
-  doom-emacs = pkgs.doomEmacs doomArgs;
-  # emacs-with-doom: for macos
-  # TODO see if I can remove the linux bits, use this everywhere
-  emacs-with-doom = lib.lowPrio (pkgs.emacsWithDoom doomArgs);
-  emacs-alias = pkgs.writeShellScriptBin "emacs" ''
-    exec ${doom-emacs}/bin/doom-emacs "$@"
-  '';
-  emacsclient-wrapper = pkgs.writeShellScriptBin "emacsclient" ''
-    exec ${doom-emacs.emacsWithPackages}/bin/emacsclient "$@"
-  '';
+  emacs-with-doom = pkgs.emacsWithDoom doomArgs;
   emacseditor-wrapper = pkgs.writeShellScriptBin "emacseditor" ''
     if [ -z "$1" ]; then
-      exec ${doom-emacs.emacsWithPackages}/bin/emacsclient --create-frame --alternate-editor ${doom-emacs}/bin/doom-emacs
+      exec ${emacs-with-doom}/bin/emacsclient --create-frame --alternate-editor ${emacs-with-doom}/bin/emacs
     else
-      exec ${doom-emacs.emacsWithPackages}/bin/emacsclient --alternate-editor ${doom-emacs}/bin/doom-emacs "$@"
+      exec ${emacs-with-doom}/bin/emacsclient --alternate-editor ${emacs-with-doom}/bin/emacs "$@"
     fi
   '';
   doom-emacs-launcher = pkgs.writeShellScriptBin "doom-emacs-launcher" ''
-    exec ${emacsclient-wrapper}/bin/emacsclient \
-      --alternate-editor= \
+    exec ${emacs-with-doom}/bin/emacsclient \
+      --alternate-editor=${emacs-with-doom}/bin/emacs \
       --create-frame \
-      --eval '(select-frame-set-input-focus (selected-frame))' \
       "$@"
   '';
   doom-emacs-desktop = pkgs.makeDesktopItem {
@@ -70,16 +60,16 @@ let
 in
 {
   home.packages = [
-    doom-emacs
-    emacs-alias
-    emacsclient-wrapper
+    emacs-with-doom
     emacseditor-wrapper
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     doom-emacs-launcher
     doom-emacs-desktop
-  ] ++ lib.optionals pkgs.stdenv.isDarwin [
-    emacs-with-doom
-  ] ++ (with pkgs; [
+  ]
+   # ++ lib.optionals pkgs.stdenv.isDarwin [
+    
+  # ] 
+  ++ (with pkgs; [
     coreutils
     fd
     findutils

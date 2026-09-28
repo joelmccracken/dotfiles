@@ -229,6 +229,11 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+;; emacsclient -c raises the frame but doesn't always take input focus under
+;; Wayland/GNOME. Do it from the server hook
+(add-hook 'server-after-make-frame-hook
+          (lambda () (select-frame-set-input-focus (selected-frame))))
+
 (setq safe-local-variable-values
       '((lsp-haskell-server-path . "~/bin/haskell-language-server-macOS-8.8.4")
         (lsp-haskell-formatting-provider . "stylish-haskell")
