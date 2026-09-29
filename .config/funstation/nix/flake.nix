@@ -75,6 +75,7 @@
                     pkgs.coreutils
                     pkgs.wget
                     pkgs.racket
+                    pkgs.gh
                     # Pulled from unstable (26.05 on x86_64-darwin) to track a
                     # recent release of the CLI.
                     pkgs-newer.claude-code
