@@ -24,6 +24,7 @@ export PATH="$HOME/.ghcup/bin:$PATH"
 export PATH="$HOME/.bun/bin:$PATH"
 export PATH="$PATH:/Users/joel/.lmstudio/bin"
 export PATH="/usr/local/opt/openjdk/bin:$PATH"
+export PATH="$HOME/Projects/funstation/result/bin:$PATH"
 
 export PATH="$BUN_INSTALL/bin:$PATH"
 
