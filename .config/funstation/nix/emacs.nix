@@ -12,9 +12,13 @@ let
     # emacsPackageOverrides = eself: esuper: { };
     extraPackages = epkgs: [
       epkgs.daml-mode
+      epkgs.treesit-grammars.with-all-grammars
     ];
   };
   emacs-with-doom = pkgs.emacsWithDoom doomArgs;
+  # The GUI launcher resolves Emacs through the profile; thus the desktop launcher will
+  # launch updated builds without requring a gnome restart
+  profileBin = "${config.home.profileDirectory}/bin";
   emacseditor-wrapper = pkgs.writeShellScriptBin "emacseditor" ''
     if [ -z "$1" ]; then
       exec ${emacs-with-doom}/bin/emacsclient --create-frame --alternate-editor ${emacs-with-doom}/bin/emacs
@@ -23,8 +27,8 @@ let
     fi
   '';
   doom-emacs-launcher = pkgs.writeShellScriptBin "doom-emacs-launcher" ''
-    exec ${emacs-with-doom}/bin/emacsclient \
-      --alternate-editor=${emacs-with-doom}/bin/emacs \
+    exec ${profileBin}/emacsclient \
+      --alternate-editor=${profileBin}/emacs \
       --create-frame \
       "$@"
   '';
@@ -33,7 +37,7 @@ let
     desktopName = "Doom Emacs";
     genericName = "Text Editor";
     comment = "Edit text files";
-    exec = "${doom-emacs-launcher}/bin/doom-emacs-launcher %F";
+    exec = "${profileBin}/doom-emacs-launcher %F";
     icon = "emacs";
     type = "Application";
     terminal = false;
