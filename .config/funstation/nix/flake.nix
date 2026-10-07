@@ -51,6 +51,20 @@
             nativeBuildInputs = old.nativeBuildInputs
               ++ nixpkgs.lib.optionals pkgs-newer.stdenv.isDarwin [ pkgs-newer.xcbuild ];
           });
+          # Hetzner Cloud CLI
+          # reads API token from ~/secrets into env var
+          hcloud = pkgs.writeShellScriptBin "hcloud" ''
+            token_file="$HOME/secrets/hcloud_token"
+            if [ -z "''${HCLOUD_TOKEN:-}" ]; then
+              if [ -s "$token_file" ] && [ -r "$token_file" ]; then
+                HCLOUD_TOKEN="$(cat "$token_file")"
+                export HCLOUD_TOKEN
+              else
+                echo "hcloud wrapper: warning: $token_file is missing, empty or unreadable; running without a token" >&2
+              fi
+            fi
+            exec ${pkgs.hcloud}/bin/hcloud "$@"
+          '';
           home-config-mod =
               { config, pkgs, ... }:
                 {
@@ -76,6 +90,7 @@
                     pkgs.wget
                     pkgs.racket
                     pkgs.gh
+                    hcloud  # wrapper defined above; token from ~/secrets/hcloud_token
                     # Pulled from unstable (26.05 on x86_64-darwin) to track a
                     # recent release of the CLI.
                     pkgs-newer.claude-code
