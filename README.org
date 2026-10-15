@@ -1,19 +1,21 @@
 #+title: Readme
-
-
-new home for my dotfiles/config working with funstation tool
-
-
-
+Home for my dotfiles and funstation configuration.
 * usage/setup
-- download the file at $REPO_ROOT/.config/funstation/config.yaml, put it at that
-  location in $HOME.
-- in ~$HOME/secrets~ create two files:
-  - ~bw_email~, which should just contain the raw bitwarden secrets email
-  - ~bw_master_pass~, which should contain the master password
+- download the file at =$REPO_ROOT/.config/funstation/config.yaml=, put it at that
+  location in =$HOME=.
+- in =$HOME/secrets= create these files:
+  - =bw_client_id=, which should just contain the bitwarden client id
+  - =bw_client_secret=
+  - =bw_master_pass=, which should contain the master password
   - be sure to change the permissions on these files.
-- download ~funstation~ executable for current system.
-- run ~fun --workstation $WORKSTATION_NAME bootstrap~
+- download ~funstation~ executable for system.
+- run ~fun -v --workstation $WORKSTATION_NAME bootstrap~
+  - find workstation name in funstation config file
 * after setup:
 - currently emacs requires ~doom sync~ to be run independently
 - ssh config file needs to be set up
+* about
+This repo is intended to be checked out at =$HOME=. The tool funstation handles
+the desired way to set the git directory, clone the repo, and handle any
+conflicts between =$HOME= and repo content. see the ~GitHomeDir~ properties in
+=.config/funstation/config.yaml=.
