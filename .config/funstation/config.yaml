@@ -11,9 +11,10 @@ workstations:
   - name: "first-run" # initial setup, run first 
     use: [ git-home-dir-first-run ]
   - name: "angrist"      # personal, aarch64
-    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets]
+    # use: [ bitwarden-secrets ]
+    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, remote-access]
   - name: "glamdring"    # personal, x86
-    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets]
+    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, remote-access]
   - name: "aeglos"       # work
     use: [ git-home-dir, home-manager, bitwarden-secrets ]
 properties:
@@ -22,6 +23,12 @@ properties:
     params:
       content: |
         $USER ALL=(ALL) NOPASSWD: ALL
+  - name: remote-access
+    type: ShellCommand
+    params:
+      desc: "SSH and Screen Sharing enabled"
+      checker: ~/.local/bin/enable-remote-access.sh --check
+      fixer: ~/.local/bin/enable-remote-access.sh
   - name: git-home-dir-first-run
     type: GitHomeDir
     params:
