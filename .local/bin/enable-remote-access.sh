@@ -92,7 +92,7 @@ fi
 
 echo "Enabling SSH and Screen Sharing for user: $TARGET_USER"
 # Get sudo credentials up front. Not `sudo -v`, which would ask for password, even
-# with my NOPASSWD entry 
+# with my NOPASSWD entry
 sudo true
 
 # Create a service access group (if needed) and add the user to it.
