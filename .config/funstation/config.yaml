@@ -17,6 +17,8 @@ workstations:
     use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, remote-access]
   - name: "aeglos"       # work
     use: [ git-home-dir, home-manager, bitwarden-secrets ]
+  - name: "belthronding" # cloud workstation VM
+    use: [] # properties TBD
 properties:
   - name: sudoers
     type: Sudoers
