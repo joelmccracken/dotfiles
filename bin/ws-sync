@@ -1,0 +1,735 @@
+#!/usr/bin/env bash
+# Report and compare the state of this workstation's configuration checkouts,
+# and move work between them.  See Note [Two checkouts, one repo].
+
+set -euo pipefail
+
+# Note [Two checkouts, one repo]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The dotfiles repository is checked out twice on this machine:
+#
+#   live   ~                      work tree, with GIT_DIR=~/.git-dir
+#   wip    ~/Projects/dotfiles    an ordinary clone
+#
+# Same remote, same branch.  The live checkout IS the running configuration --
+# writing a file there changes the system immediately -- so work happens in wip
+# and crosses over deliberately: `promote` carries commits wip -> live, `adopt`
+# carries them live -> wip.
+#
+# Drift between the two therefore has two independent parts, and the commands
+# report both: which commit each checkout sits on, and what the files on disk
+# actually say.  See Note [Finding drift].
+#
+# `status` and `diff` leave the live system alone entirely; the only lasting
+# write either makes is the live/master remote-tracking ref inside the wip
+# clone.  `promote` changes ~, by fast-forward only --
+# see Note [Fast-forward only].
+
+# Note [Test hooks]
+# ~~~~~~~~~~~~~~~~~
+# WS_SYNC_HOME, WS_SYNC_HOME_GIT_DIR and WS_SYNC_DOTFILES relocate the two
+# checkouts, so the code paths that write to the live repo can be exercised
+# against a throwaway fixture.  Unset in every real use.
+ws_home="${WS_SYNC_HOME:-$HOME}"
+home_git_dir="${WS_SYNC_HOME_GIT_DIR:-$ws_home/.git-dir}"
+dotfiles="${WS_SYNC_DOTFILES:-$ws_home/Projects/dotfiles}"
+funstation="${ws_home}/Projects/funstation"
+nixos=/etc/nixos
+
+# Note [Crossing the object-store boundary]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# The two checkouts are separate repositories with separate object databases,
+# and git can only compare objects that live in a single store.  Two ways
+# across, used for different things:
+#
+#   1. Fetch.  `ws-sync init` makes each checkout a remote of the other --
+#      'live' in wip pointing at ~/.git-dir, 'wip' in ~ pointing at the clone.
+#      Persistent, and it yields ordinary remote-tracking refs that work from
+#      the shell with no script involved:
+#
+#        git -C ~/Projects/dotfiles log live/master..HEAD
+#        git --git-dir=~/.git-dir diff HEAD wip/master
+#
+#   2. GIT_ALTERNATE_OBJECT_DIRECTORIES.  Attaches another store read-only for
+#      the length of one command and leaves nothing behind, which suits
+#      transient objects.  That is what sgit() uses it for; see Note
+#      [Work-tree snapshots].
+#
+# Remotes are referred to by name rather than hardcoded as URLs because git
+# config is not tracked in the repo -- each machine runs `ws-sync init` once.
+live_ref=live/master     # ~'s master, as seen from the wip checkout
+wip_ref=wip/master       # wip's master, as seen from the live repo
+
+dotfiles_git="$(git -C "$dotfiles" rev-parse --absolute-git-dir)"
+
+# Scratch object store; see Note [Work-tree snapshots].
+tmpdir="$(mktemp -d "${TMPDIR:-/tmp}/ws-sync.XXXXXXXX")"
+trap 'rm -rf "$tmpdir"' EXIT
+snap_objects="$tmpdir/objects"
+
+if [[ -t 1 ]]; then
+  bold=$'\033[1m'; red=$'\033[31m'; green=$'\033[32m'
+  yellow=$'\033[33m'; dim=$'\033[2m'; off=$'\033[0m'
+else
+  bold=''; red=''; green=''; yellow=''; dim=''; off=''
+fi
+
+usage() {
+  cat <<'EOF'
+usage: ws-sync init
+         Make the two checkouts remotes of each other: 'live' in the WIP repo
+         pointing at ~/.git-dir, 'wip' in ~ pointing at ~/Projects/dotfiles.
+         Idempotent.  Needed once per machine -- git config is not tracked.
+
+       ws-sync status [--fetch]
+         Summarize every configuration checkout: commit, dirty state, position
+         relative to origin, and which files differ between live and WIP.
+
+       ws-sync diff [--stat] [--fetch] [--] [path...]
+         Show live ~ versus WIP ~/Projects/dotfiles as a patch.  The diff reads
+         in the promote direction: applying it would make ~ match the WIP tree.
+
+       ws-sync promote [-m MSG] [--local] [--dry-run]
+         Fast-forward live ~ to the WIP commit.  By default this routes through
+         origin, so ~ only ever holds commits that reached GitHub.
+
+       ws-sync adopt [--dry-run]
+         The reverse: fast-forward the WIP checkout to commits made directly
+         in ~.  Commits only -- uncommitted edits in ~ are left alone.
+
+options:
+  -m MSG      Commit WIP's uncommitted changes with this message first.
+              Without it, a dirty WIP aborts the promote.
+  --local     Fetch straight from ~/Projects/dotfiles instead of pushing to
+              origin first.  No network.  Leaves ~ ahead of origin until a
+              later push, which `status` will flag -- use it to try a risky
+              change live before publishing it.
+  --dry-run   Report what promote would do, and run every safety check, without
+              committing, pushing, or touching ~.
+  --fetch     (status/diff) Contact origin first.  Without it, anything
+              reported relative to origin reflects the last fetch.
+  --stat      (diff) Summarize the diff instead of printing it in full.
+EOF
+  exit 1
+}
+
+die()  { printf '%sws-sync: %s%s\n' "$red" "$*" "$off" >&2; exit 1; }
+note() { printf '%s%s%s\n' "$dim" "$*" "$off"; }
+
+row() { printf '  %-9s %s\n' "$1" "$2"; }
+header() { printf '%s%s%s %s%s%s\n' "$bold" "$1" "$off" "$dim" "${2:-}" "$off"; }
+
+short() { git -C "$1" rev-parse --short "$2"; }
+
+# git in the live home repo.  --work-tree is redundant (core.worktree is set in
+# ~/.git-dir) but is spelled out to match the convention used everywhere else.
+hgit() { git --git-dir="$home_git_dir" --work-tree="$ws_home" -C "$ws_home" "$@"; }
+
+# Note [Untracked files are not drift]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Dirty counts and drift detection both ignore untracked files.  ~/.gitignore
+# is exclusion-based, so the home directory is full of untracked-but-present
+# files that are simply not part of the configuration; and a file neither
+# checkout tracks cannot drift between them.
+dirty_count() {
+  local git_dir="$1" worktree="$2"
+  git --git-dir="$git_dir" --work-tree="$worktree" \
+      -C "$worktree" status --porcelain --untracked-files=no | wc -l | tr -d ' '
+}
+
+dirty_phrase() {
+  case "$1" in
+    (0) printf '%sclean%s' "$green" "$off" ;;
+    (1) printf '%s1 file modified%s' "$red" "$off" ;;
+    (*) printf '%s%s files modified%s' "$red" "$1" "$off" ;;
+  esac
+}
+
+# How $3 sits relative to $2, both refs in repo $1, phrased against the name $4
+# ("1 behind origin", "in step with live").  The noun is an argument so each
+# branch can pick the preposition that actually reads.
+divergence() {
+  local noun="$4" counts behind ahead
+  counts="$(git -C "$1" rev-list --left-right --count "$2...$3")"
+  behind="${counts%%	*}"; ahead="${counts##*	}"
+  if [[ "$behind" == 0 && "$ahead" == 0 ]]; then
+    printf 'in step with %s' "$noun"
+  elif [[ "$behind" == 0 ]]; then
+    printf '%s ahead of %s' "$ahead" "$noun"
+  elif [[ "$ahead" == 0 ]]; then
+    printf '%s behind %s' "$behind" "$noun"
+  else
+    printf '%s ahead of, %s behind %s' "$ahead" "$behind" "$noun"
+  fi
+}
+
+# Refresh live/master inside the wip checkout; local, no network.
+# See Note [Crossing the object-store boundary], mechanism 1.
+mirror_home() {
+  require_remote "$dotfiles" live
+  git -C "$dotfiles" fetch --quiet live
+}
+
+# Both remotes are plain local paths, so this is cheap and safe to re-run.
+# Kept as an explicit subcommand rather than done implicitly: it writes to
+# ~/.git-dir/config, and silently reconfiguring the live repo is not something
+# a status command should do.
+do_init() {
+  local changed=false
+  if ! git -C "$dotfiles" remote get-url live >/dev/null 2>&1; then
+    git -C "$dotfiles" remote add live "$home_git_dir"
+    note "added remote 'live' -> $home_git_dir  (in $dotfiles)"; changed=true
+  fi
+  if ! hgit remote get-url wip >/dev/null 2>&1; then
+    hgit remote add wip "$dotfiles"
+    note "added remote 'wip' -> $dotfiles  (in $home_git_dir)"; changed=true
+  fi
+  $changed || note "remotes already configured"
+  git -C "$dotfiles" fetch --quiet live
+  hgit fetch --quiet wip
+  note "fetched both; $live_ref=$(short "$dotfiles" "$live_ref") $wip_ref=$(hgit rev-parse --short "$wip_ref")"
+}
+
+require_remote() {
+  git -C "$1" remote get-url "$2" >/dev/null 2>&1 \
+    || die "no '$2' remote in $1 -- run: ws-sync init"
+}
+
+# Note [Finding drift]
+# ~~~~~~~~~~~~~~~~~~~~
+# Why a file differs between the checkouts has exactly three possible causes:
+# an uncommitted edit in live, an uncommitted edit in wip, and a difference
+# between the two HEADs.  Each is one `git diff --name-only`.
+#
+# Those three sets are exhaustive.  If a path is unmodified in live, unmodified
+# in wip, and identical between the two HEADs, then both work trees hold that
+# HEAD's content and it cannot differ.  So the labels are plain set membership,
+# needing no per-file blob lookups.
+#
+# The causes are independent and do co-occur: a file can carry a committed
+# change on the wip side AND an uncommitted edit on the live side.  Reporting
+# only the first found would make that read as a one-sided change that is safe
+# to promote, so drift_label lists every cause that applies.
+#
+# What the files actually say is a separate question, answered by diffing the
+# two work trees; see Note [Work-tree snapshots].  Untracked files are out of
+# scope throughout -- see Note [Untracked files are not drift].
+declare -A live_edited wip_edited commit_differs
+collect_candidates() {
+  live_edited=(); wip_edited=(); commit_differs=()
+  local f
+  while IFS= read -r f; do [[ -n "$f" ]] && live_edited["$f"]=1; done \
+    < <(hgit diff --name-only HEAD)
+  while IFS= read -r f; do [[ -n "$f" ]] && wip_edited["$f"]=1; done \
+    < <(git -C "$dotfiles" diff --name-only HEAD)
+  while IFS= read -r f; do [[ -n "$f" ]] && commit_differs["$f"]=1; done \
+    < <(git -C "$dotfiles" diff --name-only "$live_ref" HEAD)
+}
+
+# Note [Work-tree snapshots]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Comparing what is on disk in the two checkouts -- not merely what is
+# committed -- is done by turning each work tree into a throwaway commit.
+#
+# `git stash create` does exactly that: it builds a commit whose tree is the
+# current work tree and prints its oid, touching neither the work tree, the
+# index, nor refs/stash.  Nothing appears in `git stash list`, so there is no
+# stash to drop afterwards.  On a clean tree it prints nothing, in which case
+# HEAD already describes the work tree.
+#
+# The new objects are sent to a scratch store with GIT_OBJECT_DIRECTORY and
+# removed by the EXIT trap, so neither repository is left carrying them.
+# Letting them land and cleaning up afterwards would mean `git prune`, which
+# also reaps unrelated unreachable objects -- far too blunt for a status
+# command.
+#
+# Because both snapshots are commits, a single ordinary `git diff` spans the
+# pair and brings renames, mode changes, --stat, binary detection and real
+# pathspecs with it.  Both stores are made visible at once by mechanism 2 of
+# the Note above.
+snapshot_of() {
+  local git_dir="$1" worktree="$2" snap
+  mkdir -p "$snap_objects"
+  snap="$(GIT_OBJECT_DIRECTORY="$snap_objects" \
+          GIT_ALTERNATE_OBJECT_DIRECTORIES="$git_dir/objects" \
+          git --git-dir="$git_dir" --work-tree="$worktree" -C "$worktree" \
+              stash create)"
+  [[ -n "$snap" ]] || snap="$(git --git-dir="$git_dir" rev-parse HEAD)"
+  printf '%s' "$snap"
+}
+
+live_snap='' wip_snap=''
+take_snapshots() {
+  [[ -n "$live_snap" ]] && return 0
+  live_snap="$(snapshot_of "$home_git_dir" "$ws_home")"
+  wip_snap="$(snapshot_of "$dotfiles_git" "$dotfiles")"
+}
+
+# git in the wip repo, with the scratch snapshots and ~'s objects readable.
+# See Note [Crossing the object-store boundary].
+sgit() {
+  GIT_ALTERNATE_OBJECT_DIRECTORIES="$snap_objects:$home_git_dir/objects" \
+    git -C "$dotfiles" "$@"
+}
+
+# Which causes apply to one drifting path.  See Note [Finding drift].
+# Reads $commit_dir from report_home.
+drift_label() {
+  local path="$1" colour="$dim"
+  local -a parts=()
+  if [[ -v live_edited["$path"] ]]; then
+    parts+=("live edited (UNCOMMITTED)"); colour="$red"
+  fi
+  if [[ -v wip_edited["$path"] ]]; then
+    parts+=("wip edited (uncommitted)")
+    [[ "$colour" == "$dim" ]] && colour="$yellow"
+  fi
+  if [[ -v commit_differs["$path"] ]]; then
+    parts+=("$commit_dir (committed)")
+  fi
+  local joined
+  printf -v joined '%s, ' "${parts[@]}"
+  printf '%s%s%s' "$colour" "${joined%, }" "$off"
+}
+
+report_home() {
+  local live_head wip_head live_dirty wip_dirty commit_dir has_origin=false
+
+  live_head="$(short "$dotfiles" "$live_ref")"
+  wip_head="$(short "$dotfiles" HEAD)"
+  live_dirty="$(dirty_count "$home_git_dir" "$ws_home")"
+  wip_dirty="$(dirty_count "$dotfiles_git" "$dotfiles")"
+
+  git -C "$dotfiles" rev-parse --verify --quiet origin/master >/dev/null && has_origin=true
+
+  # Which side is ahead, for files whose only difference is committed.
+  if git -C "$dotfiles" merge-base --is-ancestor "$live_ref" HEAD 2>/dev/null; then
+    commit_dir="wip ahead"
+  elif git -C "$dotfiles" merge-base --is-ancestor HEAD "$live_ref" 2>/dev/null; then
+    commit_dir="live ahead"
+  else
+    commit_dir="diverged"
+  fi
+
+  header 'home repo' "~ (live)  vs  ~/Projects/dotfiles (wip)"
+
+  # Each checkout is reported against origin as well as against the other,
+  # because live can end up ahead of origin on its own.  See Note [Origin is
+  # the default route].
+  local live_vs_origin='' wip_vs_origin=''
+  if $has_origin; then
+    live_vs_origin="$(divergence "$dotfiles" origin/master "$live_ref" origin)"
+    wip_vs_origin="${dim}$(divergence "$dotfiles" origin/master HEAD origin)${off}"
+    if [[ "$live_vs_origin" == *ahead* ]]; then
+      live_vs_origin="${red}${live_vs_origin} -- UNPUSHED${off}"
+    else
+      live_vs_origin="${dim}${live_vs_origin}${off}"
+    fi
+  fi
+
+  row live "$live_head  $(dirty_phrase "$live_dirty")  $live_vs_origin"
+  row wip  "$wip_head  $(dirty_phrase "$wip_dirty")  $wip_vs_origin"
+  if $has_origin; then
+    row origin "$(short "$dotfiles" origin/master)"
+  else
+    row origin "${dim}no origin/master ref; run with --fetch${off}"
+  fi
+
+  [[ "$live_head" != "$wip_head" ]] && \
+    row commits "${dim}wip is $(divergence "$dotfiles" "$live_ref" HEAD live)${off}"
+
+  collect_candidates
+  take_snapshots
+  local -a changed
+  mapfile -t changed < <(sgit diff --name-only "$live_snap" "$wip_snap")
+  if (( ${#changed[@]} == 0 )); then
+    row files "${green}identical${off}"
+  else
+    row files "${red}${#changed[@]} differ${off}  ${dim}ws-sync diff${off}"
+    local p
+    for p in "${changed[@]}"; do
+      printf '            %-48s %s\n' "$p" "$(drift_label "$p")"
+    done
+  fi
+  echo
+}
+
+# Note [nix build is the deploy step]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# `fun` on PATH resolves to ~/Projects/funstation/result/bin/fun -- the result
+# symlink inside the checkout itself.  So `nix build` in that repo replaces the
+# live tool the moment it completes: it is a deploy, not a compile.  Ordinary
+# iteration (nix develop, then cabal build/test) writes only to dist-newstyle/
+# and leaves result alone.
+#
+# funstation therefore has no wip/live checkout pair; the deploy boundary is
+# the build.  What `status` can usefully report instead is whether result is
+# stale, which needs .last-build-commit to be recorded at build time.
+report_funstation() {
+  local head dirty built on_path
+
+  header funstation '~/Projects/funstation'
+  head="$(short "$funstation" HEAD)"
+  dirty="$(dirty_count "$(git -C "$funstation" rev-parse --absolute-git-dir)" "$funstation")"
+  row head "$head  $(dirty_phrase "$dirty")"
+
+  if git -C "$funstation" rev-parse --verify --quiet origin/master >/dev/null; then
+    row origin "$(short "$funstation" origin/master)  ${dim}HEAD is $(divergence "$funstation" origin/master HEAD origin)${off}"
+  fi
+
+  if [[ -L "$funstation/result" ]]; then
+    built="$(readlink "$funstation/result")"
+    row result "${dim}${built##*/}${off}"
+    if [[ -f "$funstation/.last-build-commit" ]]; then
+      local b; b="$(<"$funstation/.last-build-commit")"
+      if [[ "$b" == "$(git -C "$funstation" rev-parse HEAD)" ]]; then
+        row "built at" "${b:0:7}  ${green}matches HEAD${off}"
+      else
+        row "built at" "${b:0:7}  ${red}behind HEAD${off}  ${dim}needs nix build to promote${off}"
+      fi
+    else
+      row "built at" "${dim}unknown -- no .last-build-commit${off}"
+    fi
+  else
+    row result "${dim}absent; nothing built${off}"
+  fi
+
+  on_path="$(command -v fun || true)"
+  if [[ -z "$on_path" ]]; then
+    row "on PATH" "${red}fun not found${off}"
+  elif [[ "$on_path" == "$funstation/result/bin/fun" ]]; then
+    row "on PATH" "${dim}this checkout${off}"
+  else
+    row "on PATH" "${red}${on_path}${off}  ${dim}not this checkout${off}"
+  fi
+  echo
+}
+
+report_nixos() {
+  header nixos "$nixos"
+  if [[ ! -d "$nixos" ]]; then
+    row - "${dim}absent (not a NixOS machine)${off}"; echo; return
+  fi
+  if ! git -C "$nixos" rev-parse --git-dir >/dev/null 2>&1; then
+    row - "${red}not readable as a git repo${off}"
+    row - "${dim}root-owned; try: git config --global --add safe.directory $nixos${off}"
+    echo; return
+  fi
+  row head "$(short "$nixos" HEAD)  $(dirty_phrase \
+    "$(git -C "$nixos" status --porcelain --untracked-files=no | wc -l | tr -d ' ')")"
+  echo
+}
+
+do_status() {
+  mirror_home
+  report_home
+  report_funstation
+  report_nixos
+}
+
+# One `git diff` across the pair of wip and live; see Note [Work-tree snapshots].
+# Reads the global $paths array and $stat.
+do_diff() {
+  mirror_home
+  take_snapshots
+  local -a changed
+
+  # The two commits must come before
+  # the `--`, or git parses them as pathspecs and the diff comes back empty.
+  mapfile -t changed < <(sgit diff --name-only "$live_snap" "$wip_snap" \
+                           ${paths[0]+-- "${paths[@]}"})
+  if (( ${#changed[@]} == 0 )); then
+    if (( ${#paths[@]} )); then
+      note "no drift in: ${paths[*]}"
+    else
+      note 'live ~ and wip dotfiles are identical.'
+    fi
+    return
+  fi
+  printf '%s--- live ~  ->  wip ~/Projects/dotfiles (promote direction)%s\n\n' "$dim" "$off"
+
+  local -a opts=(--src-prefix=live/ --dst-prefix=wip/)
+  $stat && opts+=(--stat)
+  sgit diff "${opts[@]}" "$live_snap" "$wip_snap" ${paths[0]+-- "${paths[@]}"}
+}
+
+# Landing a file is not always applying it.  Name the follow-up a given change
+# implies; this is the one part of a promote that plain git cannot work out.
+apply_hints() {
+  local -a files=("$@")
+  local -a hints=()
+  local f
+  for f in "${files[@]}"; do
+    case "$f" in
+      (.config/funstation/nix/*)
+        hints+=("fun home-manager rebuild   # user-level nix / doom config changed") ;;
+      (.bashrc|.commonrc|.zshrc|.config/funstation/lib/shell/*)
+        hints+=("exec \$SHELL               # shell config changed") ;;
+      (.config/funstation/config.yaml)
+        hints+=("(config.yaml changed; affects the next fun run)") ;;
+      (*/crontab)
+        hints+=("(crontab changed; reinstall it to take effect)") ;;
+      (.config/funstation/Brewfile*)
+        hints+=("fun brew-bundle ...        # macOS only; inert on this machine") ;;
+    esac
+  done
+  (( ${#hints[@]} )) || return 0
+  printf '\n%sto apply:%s\n' "$bold" "$off"
+  printf '%s\n' "${hints[@]}" | sort -u | sed 's/^/  /'
+}
+
+# Note [Fast-forward only]
+# ~~~~~~~~~~~~~~~~~~~~~~~~
+# promote and adopt both move a checkout with `merge --ff-only`, never a real
+# merge.  If the two have genuinely diverged then someone committed on both
+# sides, and that needs a human rather than a merge commit authored by a
+# script.
+#
+# A fast-forward can still destroy work in two ways.  Both are preflighted
+# here rather than left to git: git does refuse on its own, but its message
+# names neither the file nor the reason.
+#
+#   1. A tracked file modified in the destination work tree that the incoming
+#      commits also touch.
+#   2. An incoming *new* file that already exists, untracked, in the
+#      destination work tree.  Far likelier with $HOME as a work tree than in
+#      an ordinary repo, given Note [Untracked files are not drift].
+#
+# Uncommitted work is never reconciled automatically in either direction; it
+# is reported and left alone, because moving it is a merge rather than a
+# transfer.  That is also why `adopt` handles commits only.
+
+# Note [Origin is the default route]
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# promote pushes wip to origin and then fast-forwards ~ from origin, so ~ only
+# ever holds commits that reached GitHub: the running configuration stays
+# reproducible from the remote, and the other machines converge on the same
+# thing.  It is also the very path a push from another machine takes, so there
+# is one mechanism to keep correct instead of two.
+#
+# --local skips the push and fetches straight from the wip remote -- no
+# network, and the way to try a risky change live before publishing it.  The
+# cost is that ~ is left ahead of origin, holding configuration that exists
+# nowhere else, which is why report_home gives live-vs-origin its own row and
+# flags it UNPUSHED.
+do_promote() {
+  local target target_desc
+  local wip_dirty; wip_dirty="$(dirty_count "$dotfiles_git" "$dotfiles")"
+
+  # 1. The WIP side must be committed; fetch only ever transfers commits.
+  if (( wip_dirty > 0 )); then
+    [[ -n "$msg" ]] || die "wip has $wip_dirty uncommitted file(s); pass -m MSG to commit them, or commit in $dotfiles yourself"
+    if $dry_run; then
+      note "would commit $wip_dirty file(s) in wip: $msg"
+    else
+      git -C "$dotfiles" commit --quiet -a -m "$msg"
+      note "committed $wip_dirty file(s) in wip: $(short "$dotfiles" HEAD) $msg"
+    fi
+  elif [[ -n "$msg" ]]; then
+    note "-m given but wip is clean; nothing to commit"
+  fi
+
+  # 2. Get the WIP commit into the home repo's object store.
+  if $local_mode; then
+    target_desc="the wip remote (local, no network)"
+    hgit remote get-url wip >/dev/null 2>&1 \
+      || die "no 'wip' remote in $home_git_dir -- run: ws-sync init"
+    # Fetching only moves objects and refs; the work tree is untouched, so this
+    # is safe to do in a dry run too.  The target is the remote-tracking ref
+    # rather than FETCH_HEAD, which is a single slot any other fetch overwrites.
+    hgit fetch --quiet wip
+    target="$wip_ref"
+  else
+    target_desc='origin'
+    if $dry_run; then
+      note "would push wip to origin"
+    else
+      git -C "$dotfiles" push --quiet origin master
+      note "pushed wip to origin"
+    fi
+    hgit fetch --quiet origin
+    target=origin/master
+    # Without the push, origin/master still lacks whatever wip has locally, so
+    # the preview below is of a smaller promote than the real one would be.
+    if $dry_run && ! git -C "$dotfiles" merge-base --is-ancestor HEAD origin/master 2>/dev/null; then
+      note "dry run: origin is missing wip's latest commit(s), so this preview understates the real promote; --local previews it exactly"
+    fi
+  fi
+
+  local head_oid target_oid
+  head_oid="$(hgit rev-parse HEAD)"
+  target_oid="$(hgit rev-parse "$target")"
+
+  if [[ "$head_oid" == "$target_oid" ]]; then
+    note "~ is already at ${target_oid:0:7}; nothing to promote"
+    return 0
+  fi
+
+  # 3. See Note [Fast-forward only].
+  hgit merge-base --is-ancestor HEAD "$target" \
+    || die "~ ($(hgit rev-parse --short HEAD)) has diverged from $target_desc ($(hgit rev-parse --short "$target")); resolve by hand"
+
+  local -a incoming
+  mapfile -t incoming < <(hgit diff --name-only "$head_oid" "$target_oid")
+
+  # 4. Clobber preflight, case 1 of Note [Fast-forward only].
+  local -a live_modified collide=()
+  mapfile -t live_modified < <(hgit diff --name-only HEAD)
+  local a b
+  for a in "${incoming[@]}"; do
+    for b in "${live_modified[@]}"; do
+      [[ "$a" == "$b" ]] && collide+=("$a")
+    done
+  done
+  if (( ${#collide[@]} )); then
+    printf '%sws-sync: ~ has uncommitted edits to files this promote would overwrite:%s\n' "$red" "$off" >&2
+    printf '  %s\n' "${collide[@]}" >&2
+    die "commit or discard them in ~ first -- 'ws-sync diff' shows what they say"
+  fi
+
+  # Case 2 of the same Note.
+  local -a added untracked_collide=()
+  mapfile -t added < <(hgit diff --name-only --diff-filter=A "$head_oid" "$target_oid")
+  for a in "${added[@]}"; do
+    [[ -n "$a" && -e "$ws_home/$a" ]] && untracked_collide+=("$a")
+  done
+  if (( ${#untracked_collide[@]} )); then
+    printf '%sws-sync: these incoming files already exist untracked in ~:%s\n' "$red" "$off" >&2
+    printf '  %s\n' "${untracked_collide[@]}" >&2
+    die "move them aside first"
+  fi
+
+  # 5. Land it.
+  if $dry_run; then
+    printf '\n%swould fast-forward ~  %s -> %s%s  (via %s)\n' \
+      "$bold" "${head_oid:0:7}" "${target_oid:0:7}" "$off" "$target_desc"
+  else
+    hgit merge --ff-only --quiet "$target"
+    printf '\n%sfast-forwarded ~  %s -> %s%s  (via %s)\n' \
+      "$bold" "${head_oid:0:7}" "${target_oid:0:7}" "$off" "$target_desc"
+  fi
+  printf '%s\n' "${incoming[@]}" | sed 's/^/  /'
+
+  if $local_mode; then
+    if $dry_run; then
+      printf '\n%s~ would be left ahead of origin. Push when the change proves out:%s\n' "$yellow" "$off"
+    else
+      printf '\n%s~ is now ahead of origin. Push when the change proves out:%s\n' "$yellow" "$off"
+    fi
+    printf '  git -C %s push origin master\n' "$dotfiles"
+  fi
+
+  apply_hints "${incoming[@]}"
+}
+
+# The mirror of promote, carrying commits live -> wip.
+# See Note [Fast-forward only], which also says why this is commits only.
+do_adopt() {
+  mirror_home
+
+  local wip_head live_head
+  wip_head="$(git -C "$dotfiles" rev-parse HEAD)"
+  live_head="$(git -C "$dotfiles" rev-parse "$live_ref")"
+
+  if [[ "$wip_head" == "$live_head" ]]; then
+    note "wip is already at ${wip_head:0:7}; nothing to adopt"
+    return 0
+  fi
+  if git -C "$dotfiles" merge-base --is-ancestor "$live_head" "$wip_head"; then
+    note "wip is $(divergence "$dotfiles" "$live_ref" HEAD live); nothing to adopt"
+    return 0
+  fi
+  git -C "$dotfiles" merge-base --is-ancestor "$wip_head" "$live_head" \
+    || die "wip and live have diverged; resolve by hand -- git -C $dotfiles log --oneline --graph HEAD $live_ref"
+
+  local -a commits files
+  mapfile -t commits < <(git -C "$dotfiles" log --oneline "$wip_head..$live_head")
+  mapfile -t files   < <(git -C "$dotfiles" diff --name-only "$wip_head" "$live_head")
+
+  # Clobber preflight, case 1 of Note [Fast-forward only], in the wip tree.
+  # Case 2 cannot arise here: wip is an ordinary clone, not $HOME.
+  local -a wip_modified collide=()
+  mapfile -t wip_modified < <(git -C "$dotfiles" diff --name-only HEAD)
+  local a b
+  for a in "${files[@]}"; do
+    for b in "${wip_modified[@]}"; do
+      [[ "$a" == "$b" ]] && collide+=("$a")
+    done
+  done
+  if (( ${#collide[@]} )); then
+    printf '%sws-sync: wip has uncommitted edits to files this adopt would overwrite:%s\n' "$red" "$off" >&2
+    printf '  %s\n' "${collide[@]}" >&2
+    die "commit or discard them in $dotfiles first"
+  fi
+
+  if $dry_run; then
+    printf '\n%swould fast-forward wip  %s -> %s%s\n' \
+      "$bold" "${wip_head:0:7}" "${live_head:0:7}" "$off"
+  else
+    git -C "$dotfiles" merge --ff-only --quiet "$live_ref"
+    printf '\n%sfast-forwarded wip  %s -> %s%s\n' \
+      "$bold" "${wip_head:0:7}" "${live_head:0:7}" "$off"
+  fi
+  printf '%s\n' "${commits[@]}" | sed 's/^/  /'
+  printf '%sfiles:%s\n' "$dim" "$off"
+  printf '%s\n' "${files[@]}" | sed 's/^/  /'
+
+  # A commit made in ~ exists on no other machine until it is pushed;
+  # see Note [Origin is the default route].
+  if git -C "$dotfiles" rev-parse --verify --quiet origin/master >/dev/null \
+     && ! git -C "$dotfiles" merge-base --is-ancestor "$live_head" origin/master; then
+    printf '\n%sthese commits are not on origin yet:%s\n  git -C %s push origin master\n' \
+      "$yellow" "$off" "$dotfiles"
+  fi
+}
+
+fetch=false
+stat=false
+local_mode=false
+dry_run=false
+msg=''
+cmd="${1:-}"
+[[ $# -gt 0 ]] && shift
+
+paths=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    (--fetch)   fetch=true; shift ;;
+    (--stat)    stat=true; shift ;;
+    (--local)   local_mode=true; shift ;;
+    (--dry-run) dry_run=true; shift ;;
+    (-m)        [[ $# -ge 2 ]] || die "-m needs a message"; msg="$2"; shift 2 ;;
+    (-h|--help) usage ;;
+    (--)        shift; paths+=("$@"); break ;;
+    (-*)        echo "unknown option: $1" >&2; usage ;;
+    (*)         paths+=("$1"); shift ;;
+  esac
+done
+
+if $fetch; then
+  git -C "$dotfiles" fetch --quiet origin
+  git -C "$funstation" fetch --quiet origin
+fi
+
+case "$cmd" in
+  (init)
+    if (( ${#paths[@]} )); then echo "init takes no paths" >&2; usage; fi
+    do_init
+    ;;
+  (status)
+    if (( ${#paths[@]} )); then echo "status takes no paths" >&2; usage; fi
+    do_status
+    ;;
+  (diff)
+    do_diff
+    ;;
+  (promote)
+    if (( ${#paths[@]} )); then echo "promote takes no paths" >&2; usage; fi
+    do_promote
+    ;;
+  (adopt)
+    if (( ${#paths[@]} )); then echo "adopt takes no paths" >&2; usage; fi
+    do_adopt
+    ;;
+  (*) usage ;;
+esac
