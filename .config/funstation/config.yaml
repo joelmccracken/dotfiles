@@ -12,11 +12,11 @@ workstations:
     use: [ git-home-dir-first-run ]
   - name: "angrist"      # personal, aarch64
     # use: [ bitwarden-secrets ]
-    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, remote-access]
+    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, workstation-hub, remote-access]
   - name: "glamdring"    # personal, x86
-    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, remote-access]
+    use: [ sudoers, nix-daemon, git-home-dir, brew-bundle, home-manager, bitwarden-secrets, workstation-hub, remote-access]
   - name: "aeglos"       # work
-    use: [ git-home-dir, home-manager, bitwarden-secrets ]
+    use: [ git-home-dir, home-manager, bitwarden-secrets, workstation-hub ]
   - name: "belthronding" # cloud workstation VM
     use: [] # properties TBD
 properties:
@@ -66,3 +66,9 @@ properties:
     type: BitwardenSecrets
     params:
       syncIntervalDays: 7
+  - name: workstation-hub
+    type: GitClone
+    params:
+      repoUrl: "git@github.com:joelmccracken/workstation_hub"
+      path: "~/Projects/workstation_hub"
+      branch: master
