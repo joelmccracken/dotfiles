@@ -50,3 +50,19 @@ sourceIfExists /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
 sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh
 # sourceIfExists ~/workstation/lib/shell/funcs.sh
 sourceIfExists ~/.ghcup/env
+
+# direnv.  home-manager's programs.direnv cannot install this hook for us: it
+# only injects into programs.bash.initExtra / programs.zsh.initContent, and
+# this shell config is not managed by home-manager.  (The rest of the direnv
+# setup -- direnv.toml and the nix-direnv library -- home-manager does handle,
+# via ~/.config/direnv/, which direnv picks up on its own.)
+#
+# Kept last so it runs after the nix profile is on PATH, and guarded so a
+# machine without direnv yet still gets a working shell.
+if command -v direnv > /dev/null 2>&1; then
+    if [ -n "${BASH_VERSION:-}" ]; then
+        eval "$(direnv hook bash)"
+    elif [ -n "${ZSH_VERSION:-}" ]; then
+        eval "$(direnv hook zsh)"
+    fi
+fi

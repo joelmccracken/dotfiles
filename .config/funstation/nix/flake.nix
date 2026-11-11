@@ -82,7 +82,7 @@
                     pkgs.fd
                     pkgs.go
                     pkgs.ispell
-                    pkgs.direnv
+                    # direnv is installed by programs.direnv below, not here.
                     pkgs.mr  # myrepos https://myrepos.branchable.com/install/
                     pkgs.graphviz
                     pkgs.cmake
@@ -106,6 +106,35 @@
                   home.sessionVariables = {};
 
                   programs.home-manager.enable = true;
+
+                  # direnv lives here rather than in the NixOS system config,
+                  # so the macOS machines get the same setup.  This replaces a
+                  # bare `pkgs.direnv` in home.packages: that installed the
+                  # binary but no nix-direnv and no configuration.
+                  #
+                  # The shell hook is NOT installed from here -- home-manager
+                  # only injects it into programs.bash/zsh, which this
+                  # configuration does not use.  It lives in .commonrc instead.
+                  # What home-manager does provide is ~/.config/direnv/, which
+                  # direnv reads by itself:
+                  #   direnv.toml          <- programs.direnv.config
+                  #   lib/hm-nix-direnv.sh <- programs.direnv.nix-direnv
+                  programs.direnv = {
+                    enable = true;
+
+                    # Caches `use flake` evaluation and holds a GC root, so
+                    # entering a project is instant rather than a full re-eval,
+                    # and nix-collect-garbage does not discard the cache.
+                    nix-direnv.enable = true;
+
+                    config.global = {
+                      # Flake evaluation routinely exceeds direnv's 5s default,
+                      # which warns on every cd into a cold project.
+                      warn_timeout = "30s";
+                      # Don't print a screenful of env diff on every cd.
+                      hide_env_diff = true;
+                    };
+                  };
                 };
         in
           home-manager.lib.homeManagerConfiguration {
