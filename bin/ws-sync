@@ -405,6 +405,74 @@ report_funstation() {
   echo
 }
 
+# Note [The dotfiles pin]
+# ~~~~~~~~~~~~~~~~~~~~~~~
+# /etc/nixos/flake.lock pins the `dotfiles` input; changes are not automatically
+# integrated. So for a change to take effect by default, the input must be
+# updated:
+#
+#   nix flake update dotfiles --flake /etc/nixos
+#
+# Nothing else reports this staleness.
+#
+# Input is scoped to `?dir=.config/nixos`, so anything touching
+# rest of the home repo is irrelvant to this.
+# The two revs are therefore diffed over that one path, and
+# pin is only stale when .config/nixos/ differs.
+
+# The rev of the `dotfiles` input recorded in /etc/nixos/flake.lock, or empty.
+# Parsed with awk rather than jq, which is not guaranteed to be installed; the
+# lock is machine-generated so its shape is stable.
+nixos_pinned_rev() {
+  [[ -r "$nixos/flake.lock" ]] || return 0
+  awk '
+    /"dotfiles": \{/        { inblock = 1 }
+    inblock && /"rev": "/   { if (match($0, /"rev": "[0-9a-f]+"/)) {
+                                print substr($0, RSTART + 8, RLENGTH - 9); exit } }
+    inblock && /^    \},/   { exit }
+  ' "$nixos/flake.lock"
+}
+
+# See Note [The dotfiles pin].
+report_nixos_pin() {
+  local pin tip ref n changed p
+
+  pin="$(nixos_pinned_rev)"
+  if [[ -z "$pin" ]]; then
+    row dotfiles "${dim}no 'dotfiles' input in flake.lock${off}"; return
+  fi
+
+  # The pin names a dotfiles commit, so it is the wip checkout that has to know
+  # about it -- the nixos repo has never heard of that object.
+  if ! git -C "$dotfiles" cat-file -e "${pin}^{commit}" 2>/dev/null; then
+    row dotfiles "${pin:0:7}  ${dim}unknown to the wip checkout; run with --fetch${off}"
+    return
+  fi
+
+  ref=origin/master
+  git -C "$dotfiles" rev-parse --verify --quiet "$ref" >/dev/null || ref=HEAD
+  tip="$(git -C "$dotfiles" rev-parse "$ref")"
+
+  if [[ "$pin" == "$tip" ]]; then
+    row dotfiles "${pin:0:7}  ${green}pin is current with $ref${off}"; return
+  fi
+
+  n="$(git -C "$dotfiles" rev-list --count "$pin..$ref" 2>/dev/null || echo '?')"
+  changed="$(git -C "$dotfiles" diff --name-only "$pin" "$ref" -- .config/nixos/ 2>/dev/null)"
+
+  if [[ -z "$changed" ]]; then
+    row dotfiles "${pin:0:7}  ${dim}$n behind $ref, but .config/nixos/ is unchanged -- system unaffected${off}"
+    return
+  fi
+
+  row dotfiles "${pin:0:7}  ${red}STALE -- $n behind $ref, and .config/nixos/ differs${off}"
+  while IFS= read -r p; do
+    [[ -n "$p" ]] && printf '            %s%s%s\n' "$dim" "$p" "$off"
+  done <<< "$changed"
+  row - "${yellow}a plain switch.sh would build the OLD module${off}"
+  row - "${dim}nix flake update dotfiles --flake $nixos${off}"
+}
+
 report_nixos() {
   header nixos "$nixos"
   if [[ ! -d "$nixos" ]]; then
@@ -412,11 +480,25 @@ report_nixos() {
   fi
   if ! git -C "$nixos" rev-parse --git-dir >/dev/null 2>&1; then
     row - "${red}not readable as a git repo${off}"
-    row - "${dim}root-owned; try: git config --global --add safe.directory $nixos${off}"
+    row - "${dim}try: git config --global --add safe.directory $nixos${off}"
     echo; return
   fi
   row head "$(short "$nixos" HEAD)  $(dirty_phrase \
     "$(git -C "$nixos" status --porcelain --untracked-files=no | wc -l | tr -d ' ')")"
+
+  # A plain checkout with a single branch, so origin is the only comparison
+  # that matters -- there is no wip/live pair here.  The branch is read rather
+  # than assumed: this repo is on `main` where the home repo is on `master`.
+  local branch ref
+  branch="$(git -C "$nixos" symbolic-ref --quiet --short HEAD || echo main)"
+  ref="origin/$branch"
+  if git -C "$nixos" rev-parse --verify --quiet "$ref" >/dev/null; then
+    row origin "$(short "$nixos" "$ref")  ${dim}HEAD is $(divergence "$nixos" "$ref" HEAD origin)${off}"
+  else
+    row origin "${dim}no $ref ref; run with --fetch${off}"
+  fi
+
+  report_nixos_pin
   echo
 }
 
@@ -467,6 +549,9 @@ apply_hints() {
         hints+=("exec \$SHELL               # shell config changed") ;;
       (.config/funstation/config.yaml)
         hints+=("(config.yaml changed; affects the next fun run)") ;;
+      # Landing a module is not applying it; see Note [The dotfiles pin].
+      (.config/nixos/*)
+        hints+=("nix flake update dotfiles --flake /etc/nixos   # then: /etc/nixos/switch.sh") ;;
       (*/crontab)
         hints+=("(crontab changed; reinstall it to take effect)") ;;
       (.config/funstation/Brewfile*)
@@ -709,6 +794,10 @@ done
 if $fetch; then
   git -C "$dotfiles" fetch --quiet origin
   git -C "$funstation" fetch --quiet origin
+  # Absent on the macOS machines, and only recently given a remote at all.
+  if [[ -d "$nixos" ]] && git -C "$nixos" remote get-url origin >/dev/null 2>&1; then
+    git -C "$nixos" fetch --quiet origin || note "could not fetch $nixos"
+  fi
 fi
 
 case "$cmd" in
