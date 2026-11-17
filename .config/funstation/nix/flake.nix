@@ -66,7 +66,43 @@
             exec ${pkgs.hcloud}/bin/hcloud "$@"
           '';
           home-config-mod =
-              { config, pkgs, ... }:
+              { config, lib, pkgs, ... }:
+                let
+                  # Note [Harvesting home-manager's shell integration]
+                  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  # home-manager's programs.* modules (direnv, and anything
+                  # added later: zoxide, fzf, atuin, starship...) write their
+                  # shell hooks into programs.{bash,zsh}.init* UNCONDITIONALLY.
+                  # Only the step that writes ~/.bashrc is gated behind
+                  # programs.bash.enable, which this configuration deliberately
+                  # leaves off -- the rc files are hand-maintained in the
+                  # dotfiles repo and home-manager must not own them.
+                  #
+                  # So the content is harvested into files of our own, which
+                  # .commonrc sources.  Before this, every such hook had to be
+                  # hand-copied into .commonrc (direnv's was), which silently
+                  # failed to happen for anything added later.
+                  #
+                  # The emitted text carries absolute /nix/store paths, so it
+                  # does not depend on PATH and can be sourced anywhere.
+                  #
+                  # Two files because .commonrc serves both shells and the
+                  # hooks differ (`direnv hook bash` vs `... zsh`).
+                  #
+                  # The zsh option was renamed initExtra -> initContent, and
+                  # the linux (24.11) and darwin (26.05) pins sit on opposite
+                  # sides of that rename, so both spellings are tried.
+                  hmBashInit =
+                    if config.programs.bash ? initExtra
+                    then config.programs.bash.initExtra
+                    else "";
+                  hmZshInit =
+                    if config.programs.zsh ? initContent
+                    then config.programs.zsh.initContent
+                    else if config.programs.zsh ? initExtra
+                    then config.programs.zsh.initExtra
+                    else "";
+                in
                 {
                   home.username = user;
                   home.homeDirectory = home;
@@ -97,7 +133,14 @@
                     bitwarden-cli
                   ];
 
-                  home.file = {};
+                  # See Note [Harvesting home-manager's shell integration].
+                  # mkIf keeps an empty file out of ~ when nothing injects.
+                  home.file = {
+                    ".shell-rc-home-manager.bash" =
+                      lib.mkIf (hmBashInit != "") { text = hmBashInit; };
+                    ".shell-rc-home-manager.zsh" =
+                      lib.mkIf (hmZshInit != "") { text = hmZshInit; };
+                  };
 
                   home.sessionPath = [
                     "~/.nix-profile/bin/"

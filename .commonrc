@@ -51,18 +51,23 @@ sourceIfExists ~/.nix-profile/etc/profile.d/hm-session-vars.sh
 # sourceIfExists ~/workstation/lib/shell/funcs.sh
 sourceIfExists ~/.ghcup/env
 
-# direnv.  home-manager's programs.direnv cannot install this hook for us: it
-# only injects into programs.bash.initExtra / programs.zsh.initContent, and
-# this shell config is not managed by home-manager.  (The rest of the direnv
-# setup -- direnv.toml and the nix-direnv library -- home-manager does handle,
-# via ~/.config/direnv/, which direnv picks up on its own.)
+# home-manager's shell integration.
 #
-# Kept last so it runs after the nix profile is on PATH, and guarded so a
-# machine without direnv yet still gets a working shell.
-if command -v direnv > /dev/null 2>&1; then
-    if [ -n "${BASH_VERSION:-}" ]; then
-        eval "$(direnv hook bash)"
-    elif [ -n "${ZSH_VERSION:-}" ]; then
-        eval "$(direnv hook zsh)"
-    fi
+# home-manager writes the hooks its programs.* modules want (direnv today;
+# zoxide, fzf, atuin, starship if ever added) into programs.{bash,zsh}.init*,
+# but only installs them by managing ~/.bashrc -- which it must not do here,
+# since these rc files are hand-maintained in the dotfiles repo.  So the nix
+# config harvests that text into the files sourced below.  See Note
+# [Harvesting home-manager's shell integration] in
+# .config/funstation/nix/flake.nix.
+#
+# This replaces a hand-copied `direnv hook` that used to live here.  Anything
+# home-manager adds later now arrives on its own.
+#
+# Kept last so these run after the rest of the shell is set up; the files
+# themselves reference absolute /nix/store paths and so do not need PATH.
+if [ -n "${BASH_VERSION:-}" ]; then
+    sourceIfExists ~/.shell-rc-home-manager.bash
+elif [ -n "${ZSH_VERSION:-}" ]; then
+    sourceIfExists ~/.shell-rc-home-manager.zsh
 fi
