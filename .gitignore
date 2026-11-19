@@ -341,3 +341,6 @@ obsidian/
 # .config/funstation/nix/flake.nix.
 .shell-rc-home-manager.bash
 .shell-rc-home-manager.zsh
+.config/direnv/direnv.toml
+.config/direnv/lib/hm-nix-direnv.sh
+
