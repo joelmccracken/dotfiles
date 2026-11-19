@@ -4,7 +4,7 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-26.05-darwin";
-    nixpkgs-linux.url = "github:nixos/nixpkgs/nixos-24.11";
+    nixpkgs-linux.url = "github:nixos/nixpkgs/nixos-26.05";
     # Newer nixpkgs used only for select packages (e.g. bitwarden-cli, which
     # needs a newer version to log in). Do NOT pull other packages from here.
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -16,7 +16,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
     home-manager-linux = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs-linux";
     };
     nix-doom-emacs-unstraightened = {
