@@ -142,6 +142,37 @@
                       lib.mkIf (hmZshInit != "") { text = hmZshInit; };
                   };
 
+                  # Note [Rebuild the font cache on every activation]
+                  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  # fontconfig decides a cached directory is stale by comparing
+                  # the directory's mtime against the cached one.  Nix pins
+                  # every store mtime to epoch 1 for reproducibility, so
+                  # ~/.nix-profile/share/fonts and friends look UNCHANGED
+                  # across a generation switch even when the store path behind
+                  # the symlink is completely different.
+                  #
+                  # That is normally harmless, because the cached file paths
+                  # still resolve.  It breaks when a package changes its
+                  # internal layout: nerd-fonts moved its files from
+                  # NerdFonts/*.ttf into NerdFonts/Symbols/*.ttf, the cache
+                  # kept pointing at the old flat paths, and every consumer
+                  # happily reported the font as present -- fc-list, fc-match,
+                  # Emacs's font-family-list and char-displayable-p all said
+                  # yes.  Only actually opening the file failed, so doom's
+                  # modeline icons rendered as tofu with no error anywhere.
+                  #
+                  # Nothing self-heals it: the invalidation trigger never
+                  # fires, so a new process, a re-login and a reboot all read
+                  # the same stale cache.  home-manager does not run fc-cache
+                  # itself, hence this.
+                  #
+                  # -r (erase and rebuild) rather than -f: the stale entries
+                  # look valid, so an incremental refresh leaves them in place.
+                  home.activation.rebuildFontCache =
+                    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                      $DRY_RUN_CMD ${pkgs.fontconfig}/bin/fc-cache -r
+                    '';
+
                   home.sessionPath = [
                     "~/.nix-profile/bin/"
                   ];
