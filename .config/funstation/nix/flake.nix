@@ -158,13 +158,9 @@
                   #
                   # -r (erase and rebuild) required because incremental refresh
                   #
-                  # Linux only.  macOS resolves fonts through Core Text, not
-                  # fontconfig; home-manager agrees, defaulting
-                  # fonts.fontconfig.enable to true on aeglos and false on both
-                  # macs.  Running this there would pull fontconfig into the
-                  # darwin closure to build a cache nothing reads.
+                  # Gated on fontconfig being managed here.
                   home.activation.rebuildFontCache =
-                    lib.mkIf pkgs.stdenv.hostPlatform.isLinux
+                    lib.mkIf config.fonts.fontconfig.enable
                       (lib.hm.dag.entryAfter [ "linkGeneration" ] ''
                         $DRY_RUN_CMD ${pkgs.fontconfig}/bin/fc-cache -r
                       '');
