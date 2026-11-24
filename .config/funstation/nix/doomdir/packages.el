@@ -60,3 +60,11 @@
 (package! dotenv-mode)
 
 (package! daml-mode)
+
+;; agent-shell: AI coding agents in a native Emacs buffer over ACP.
+;; acp and shell-maker are its dependencies;
+;; upstream's Doom instructions declare all three explicitly, so do the same here.
+;; https://github.com/xenodium/agent-shell
+(package! shell-maker)
+(package! acp)
+(package! agent-shell)

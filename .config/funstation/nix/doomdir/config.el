@@ -39,7 +39,6 @@
 ;; change `org-directory'. It must be set before org loads!
 ;; (setq org-directory "~/freckle/notes/")
 
-
 (defun jnm/org-common-config (dir)
   (setq org-directory (file-name-as-directory dir))
   (setq org-roam-directory (concat org-directory "zettel/"))
@@ -51,12 +50,15 @@
                 (list "actions.org" "projects.org")))
   (setq +org-capture-notes-file "inbox.org"))
 
-
 (use-package! daml-mode
   :mode "\\.daml\\'"
   :commands (daml-mode))
 
-
+;; `M-x agent-shell-anthropic-start-claude-code' to begin.
+(use-package! agent-shell
+  :defer t
+  :init
+  (add-hook 'agent-shell-mode-hook #'doom-mark-buffer-as-real-h))
 
 (let* ((ws-name "aeglos";; (getenv "WS_NAME") temporary hack, fix
                 )
@@ -84,7 +86,6 @@
                            "e" #'jnm/ef-ssh-belthronding
                            "d" #'jnm/org-ts
                            ))
-
 
 (after! +popup
   ;; added here to change the behavior of *info* buffers (set :quit to nil)

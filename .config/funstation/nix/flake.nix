@@ -130,6 +130,10 @@
                     # Pulled from unstable (26.05 on x86_64-darwin) to track a
                     # recent release of the CLI.
                     pkgs-newer.claude-code
+                    # ACP bridge that Emacs' agent-shell spawns to talk to
+                    # Claude Code.  From the same newer nixpkgs as claude-code:
+                    # it wraps that CLI, so the two should not drift apart.
+                    pkgs-newer.claude-agent-acp
                     bitwarden-cli
                   ];
 
