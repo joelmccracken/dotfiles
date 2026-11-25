@@ -58,7 +58,12 @@
 (use-package! agent-shell
   :defer t
   :init
-  (add-hook 'agent-shell-mode-hook #'doom-mark-buffer-as-real-h))
+  (add-hook 'agent-shell-mode-hook #'doom-mark-buffer-as-real-h)
+  :custom
+  ;; `M-x agent-shell' goes straight to Claude Code, no agent picker.
+  (agent-shell-preferred-agent-config 'claude-code)
+  ;; make header less annoyingly large
+  (agent-shell-header-style 'text))
 
 (let* ((ws-name "aeglos";; (getenv "WS_NAME") temporary hack, fix
                 )
