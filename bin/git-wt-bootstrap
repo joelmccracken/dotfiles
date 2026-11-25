@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+# git-wt-bootstrap -- build the bare-repo + sibling-worktrees layout that
+# `git wt` (https://github.com/k1LoW/git-wt) drives.
+#
+# Layout produced:
+#
+#   <target>/
+#   |-- .git/       bare repo: all history, and the shared config every
+#   |               worktree inherits (wt.* settings land here)
+#   |-- main/       default-branch worktree
+#   `-- TICKET/     one dir per worktree, added later with
+#                   `git wt -b <long/branch/name> TICKET`
+#
+# This script only does the ONE-TIME layout. Per-worktree setup -- copying
+# .envrc.private, running `direnv allow`, sharing node_modules -- is git-wt's
+# own wt.copy / wt.hook / wt.symlink feature.
+# Those settings are written into the bare repo's config file, so all
+# worktrees share them.
+#
+# Requires git-wt >= 0.27.0 for `-b` (nixpkgs 26.05 ships 0.28.0). Without -b,
+# a branch named jnm/FOO-1 produces a nested dir jnm/FOO-1/ instead of a flat
+# one.
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: git-wt-bootstrap <target-dir> --adopt <existing-clone> [options]
+       git-wt-bootstrap <target-dir> --clone <url>            [options]
+
+source (exactly one required):
+  --adopt <dir>      Copy an existing clone's .git to <target>/.git. Keeps
+                     history, remote-tracking refs and the fetch refspec, and
+                     touches the network not at all. The source clone is left
+                     fully intact and working.
+                     Two consequences: the repository is duplicated on disk
+                     (reflinked where the filesystem allows, so often free), and
+                     from this moment the two repositories DIVERGE -- a commit
+                     made in one is invisible to the other until pushed and
+                     fetched. Retire the source once you trust the new layout.
+  --clone <url>      Fresh `git clone --bare` into <target>/.git. Also sets
+                     remote.origin.fetch, which `clone --bare` omits -- without
+                     it there are no remote-tracking branches at all.
+
+options:
+  --branch <name>    Default branch, checked out at <target>/<name>.
+                     Default: main
+  --copy <pattern>   wt.copy pattern (gitignore syntax). Repeatable.
+  --hook <cmd>       wt.hook command, run in each new worktree. Repeatable.
+  --symlink <pat>    wt.symlink pattern. Repeatable.
+  -n, --dry-run      Print what would run; change nothing.
+  -h, --help         This.
+
+example (this repo):
+  git-wt-bootstrap ~/obsidian/ctsa \
+    --adopt ~/obsidian/canton-tokenization-service-application \
+    --copy .envrc.private \
+    --hook 'direnv allow'
+EOF
+  exit 1
+}
+
+target=
+adopt=
+clone_url=
+branch=main
+dry_run=
+copies=()
+hooks=()
+symlinks=()
+
+while (( $# )); do
+  case "$1" in
+    (--adopt)    adopt="${2:?--adopt needs a directory}"; shift 2;;
+    (--clone)    clone_url="${2:?--clone needs a URL}"; shift 2;;
+    (--branch)   branch="${2:?--branch needs a name}"; shift 2;;
+    (--copy)     copies+=("${2:?--copy needs a pattern}"); shift 2;;
+    (--hook)     hooks+=("${2:?--hook needs a command}"); shift 2;;
+    (--symlink)  symlinks+=("${2:?--symlink needs a pattern}"); shift 2;;
+    (-n|--dry-run) dry_run=1; shift;;
+    (-h|--help)  usage;;
+    (-*)         echo "unknown option: $1" >&2; usage;;
+    (*)          [[ -n "$target" ]] && { echo "target given twice: $target, $1" >&2; usage; }
+                 target="$1"; shift;;
+  esac
+done
+
+[[ -n "$target" ]] || usage
+[[ -n "$adopt" || -n "$clone_url" ]] || { echo "need --adopt or --clone" >&2; usage; }
+[[ -n "$adopt" && -n "$clone_url" ]] && { echo "--adopt and --clone are mutually exclusive" >&2; usage; }
+
+die() { echo "git-wt-bootstrap: $*" >&2; exit 1; }
+
+run() {
+  if [[ -n "$dry_run" ]]; then
+    printf '  would run:'; printf ' %q' "$@"; printf '\n'
+  else
+    "$@"
+  fi
+}
+
+# `git --git-dir=<bare>` for everything, so this works with no cwd assumptions.
+bare="$target/.git"
+git_bare() { run git --git-dir="$bare" "$@"; }
+
+# --- validate target ------------------------------------------------------
+if [[ -e "$target" ]]; then
+  [[ -d "$target" ]] || die "$target exists and is not a directory"
+  # tolerate an empty dir, refuse anything else
+  if [[ -n "$(ls -A "$target" 2>/dev/null)" ]]; then
+    die "$target is not empty -- refusing to build a layout on top of it"
+  fi
+fi
+
+# --- validate source ------------------------------------------------------
+if [[ -n "$adopt" ]]; then
+  [[ -d "$adopt/.git" ]] || die "$adopt has no .git directory (not a clone)"
+  # A bare repo also has a .git-shaped directory, but adopting one would copy a
+  # bare repo into a bare repo and only fail later, after writing to the target.
+  [[ "$(git -C "$adopt" rev-parse --is-bare-repository 2>/dev/null)" == false ]] \
+    || die "$adopt is already a bare repository, not a clone to adopt"
+
+  git -C "$adopt" rev-parse --verify --quiet "refs/heads/$branch" >/dev/null \
+    || die "$adopt has no local branch '$branch' (use --branch to pick another)"
+fi
+
+echo "building $target"
+echo "  source: ${adopt:+adopt $adopt}${clone_url:+clone $clone_url}"
+echo "  default branch: $branch"
+
+# Leave no half-built layout behind. Only removes a newly created dir
+target_preexisted=0
+[[ -e "$target" ]] && target_preexisted=1
+cleanup_on_failure() {
+  local status=$?
+  (( status == 0 )) && return 0
+  [[ -n "$dry_run" ]] && return 0
+  if (( ! target_preexisted )) && [[ -d "$target" ]]; then
+    echo "git-wt-bootstrap: failed -- removing partial $target" >&2
+    rm -rf "$target"
+  fi
+  return 0
+}
+trap cleanup_on_failure EXIT
+
+run mkdir -p "$target"
+
+# --- put a bare repo at <target>/.git -------------------------------------
+if [[ -n "$adopt" ]]; then
+  echo "copying $adopt/.git -> $bare (no refetch; source left intact)"
+  # --reflink=auto: copy-on-write if fs supports it 
+  run cp -a --reflink=auto "$adopt/.git" "$bare"
+  git_bare config --bool core.bare true
+  # Left over from the source's working tree; harmless but misleading once bare.
+  run git --git-dir="$bare" config --unset core.worktree 2>/dev/null || true
+  # The copy inherits the source's worktree registrations, which point at the
+  # source's paths. Drop the ones whose directories are not ours.
+  git_bare worktree prune
+else
+  echo "cloning --bare into $bare"
+  run git clone --bare "$clone_url" "$bare"
+  # `git clone --bare` deliberately sets NO fetch refspec, so refs/remotes/* is
+  # empty and `git wt <new> origin/main` cannot resolve its start-point.
+  git_bare config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+  git_bare fetch origin
+fi
+
+# Converting leaves HEAD on whatever the old clone had checked out. git-wt reads
+# HEAD to decide which branch is "default" and therefore delete-protected.
+git_bare symbolic-ref HEAD "refs/heads/$branch"
+
+# --- git-wt config, shared by every worktree ------------------------------
+# basedir "." resolves relative to the directory CONTAINING .git, so worktrees
+# become siblings of <target>/.git. ".." would place them a level above <target>.
+echo "configuring wt.* in $bare/config"
+git_bare config wt.basedir "."
+for p in ${copies[@]+"${copies[@]}"};   do git_bare config --add wt.copy "$p"; done
+for c in ${hooks[@]+"${hooks[@]}"};     do git_bare config --add wt.hook "$c"; done
+for p in ${symlinks[@]+"${symlinks[@]}"}; do git_bare config --add wt.symlink "$p"; done
+
+# --- default-branch worktree ----------------------------------------------
+echo "adding worktree $target/$branch"
+git_bare worktree add "$target/$branch" "$branch"
+
+# wt.copy propagates files from the worktree you run `git wt` in, so
+# the FIRST worktree has nothing to propagate from.
+# Seed files to copy from original $adopt clone.
+# Patterns are treated as paths/globs here, not gitignore syntax; good enough
+if [[ -n "$adopt" && ${#copies[@]} -gt 0 ]]; then
+  for p in "${copies[@]}"; do
+    for src in "$adopt"/$p; do
+      [[ -e "$src" ]] || continue
+      echo "seeding $(basename "$src") into $target/$branch"
+      run cp -a "$src" "$target/$branch/"
+    done
+  done
+fi
+
+if [[ -n "$dry_run" ]]; then
+  echo
+  echo "dry run: nothing changed."
+  exit 0
+fi
+
+cat <<EOF
+
+done.
+
+  cd $target/$branch
+  git wt                                 # list worktrees
+  git wt -b <long/branch/name> <DIR>     # create, flat dir name
+  git wt <DIR>                           # switch
+  git wt -d <branch>                     # delete worktree + branch
+
+EOF
+
+if [[ -n "$adopt" ]]; then
+  cat <<EOF
+$adopt is untouched and still works. The two repositories are now
+independent: commits made in one are invisible to the other until pushed and
+fetched. Work in one place, and retire the source when you are ready:
+
+  rm -rf $adopt
+
+EOF
+fi

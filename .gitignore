@@ -315,6 +315,7 @@ vmwareshared/
 .config/zoom.conf
 .config/zoom/
 .config/zoomus.conf
+.config/go
 .dpm/
 .pki/
 .testcontainers.properties

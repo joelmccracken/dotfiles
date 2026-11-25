@@ -110,10 +110,11 @@
                   home.stateVersion = "24.11";
                   home.packages = [
                     pkgs.git
+                    # `git wt`: bare-repo worktree layouts.
+                    pkgs.git-wt
                     pkgs.ripgrep
                     pkgs.jq
-                    # it is broken because of course it is
-                    # everything about nix being stable and repeatable is a lie
+                    # jl is broken because of course it is
                     # pkgs.jl
                     pkgs.fd
                     pkgs.go
@@ -205,6 +206,16 @@
                       hide_env_diff = true;
                     };
                   };
+
+                  # git-wt's shell integration defines a git() wrapper that
+                  # intercepts `git wt` so it can cd into worktree and adds completion.
+                  # NB the binary is `git-wt`, not `git wt` (which would fail)
+                  programs.bash.initExtra = ''
+                    eval "$(${pkgs.git-wt}/bin/git-wt --init bash)"
+                  '';
+                  programs.zsh.initContent = ''
+                    eval "$(${pkgs.git-wt}/bin/git-wt --init zsh)"
+                  '';
                 };
         in
           home-manager.lib.homeManagerConfiguration {

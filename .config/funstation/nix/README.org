@@ -6,4 +6,7 @@ To run manually e.g, with corrected user and workstation name:
 cd nix && nix -v -L --show-trace run '.#homeConfigurations."joel@aeglos".activationPackage'
 #+end_src
 
-or run as part of funstation tool.
+or run as part of funstation tool:
+#+begin_src sh
+fun home-manager rebuild
+#+end_src
